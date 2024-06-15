@@ -1,3 +1,6 @@
 [submodule "SUBMODULES/MB.BASE"]
 	path = SUBMODULES/MB.BASE
 	url = https://github.com/skysgh/MB.BASE
+[submodule "SUBMODULES/BASE.LIB"]
+	path = SUBMODULES/BASE.LIB
+	url = https://github.com/skysgh/BASE.LIB
