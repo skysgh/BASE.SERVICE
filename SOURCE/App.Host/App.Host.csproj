@@ -23,5 +23,13 @@
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
+	
+	
+  <ItemGroup>
+    <ProjectReference Include="..\..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Interfaces.API.ODATA\App.Modules.Core.Interfaces.API.ODATA.csproj" />
+    <ProjectReference Include="..\..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Interfaces.API.REST\App.Modules.Core.Interfaces.API.REST.csproj" />
+    <ProjectReference Include="..\..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Interfaces.Models\App.Modules.Core.Interfaces.Models.csproj" />
+    <ProjectReference Include="..\..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Interfaces.UI.Web\App.Modules.Core.Interfaces.UI.Web.csproj" />
+  </ItemGroup>
 
 </Project>
