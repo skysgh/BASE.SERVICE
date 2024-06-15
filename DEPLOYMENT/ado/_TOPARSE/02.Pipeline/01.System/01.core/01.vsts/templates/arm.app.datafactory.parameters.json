@@ -1,0 +1,68 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "comments": "",
+    "parameters": {
+        "microsoftSqlServerAdminLogin": {
+            "value": "",
+            "metadata": {
+                "description": "To Replace with actual connection string, this should come from the pipeline"
+            }
+          },
+          "microsoftSqlServerAdminPassword": {
+            "value": "",
+            "metadata": {
+                "description": "To Replace with actual connection string, this should come from the pipeline"
+            }
+          },
+          "microsoftDataFactoryName": {
+            "value": "nzmoebaseatDataFactory"
+          },
+          "microsoftSqlServerName": {
+            "value": "nzmoebaseatDataFactory"
+          },
+          "microsoftSqlServerDatabaseName": {
+            "value": "nzmoebaseatDataFactory"
+          },
+          "microsoftCosmoDbName": {
+            "value": "nzmoebaseatDataFactory"
+          },
+          "microsoftCosmoDbDatabaseName": {
+            "value": "dataFactory"
+          },
+          "microsoftCosmoDbDatabaseCollectionName": {
+            "value": "syncData"
+          },
+          "microsoftDataFactoryLinkedServiceConnectionString": {
+            "value": "**********",
+            "metadata": {
+                "description": "To Replace with actual connection string, this should come from the pipeline"
+            }
+          },
+          "microsoftDataFactoryLinkedServiceUserName": {
+            "value": "MOEST\\srvEdBaseStagingADF",
+            "metadata": {
+                "description": "The Username that is used as part of the pipeline"
+            }
+          },
+          "microsoftDataFactoryLinkedServiceEncryptedCredential": {
+            "value": "eyJDcmVkZW50aWFsSWQiOiIyNDhmYzc5NS0yMTlkLTRkMzItOWMxZC0yMWIwYjNhZmZkZGUiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ==",
+            "metadata": {
+                "description": "Some Credential which i think is the Tunnel "
+            }
+          },
+          // The COMMON keyvault:
+          "microsoftKeyVaultName": {
+            "value": "nzmoebase0000at"
+          },
+          // We need this check to see whether to apply rights to KV
+          // (we don't don't want to blitz other Access Policies/etc.)
+          "microsoftKeyVaultExists": {
+            "value": true,
+            "metadata": {
+                "description": "if the key vaut Exists or not, Please find out using a powershell script just prior to running this, ARM templates are a little dumb and don't (or can't find out)"
+            }
+        }
+    }
+
+}

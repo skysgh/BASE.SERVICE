@@ -1,0 +1,159 @@
+resources:
+- repo: self
+  clean: true
+queue:
+  name: Hosted VS2017
+  demands: 
+  - azureps
+  - sqlpackage
+
+#Your build pipeline references an undefined variable named ‘$ENV:custom_vars_TemplatesRelease’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘$ENV:custom_vars_TemplatesRelease’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘custom_vars_resourceGroupName’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘custom_vars_defaultResourceLocation’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘dataFactoryArmOutputString’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+#Your build pipeline references an undefined variable named ‘microsoftCosmoDbKey’. Create or edit the build pipeline for this YAML file, define the variable on the Variables tab. See https://go.microsoft.com/fwlink/?linkid=865972
+variables:
+  microsoftSqlServerName: 'nzmoebaseatDataFactory'
+  microsoftSqlServerDatabaseName: 'nzmoebaseatDataFactory'
+  microsoftSqlServerAdminLogin: 'NOTADMIN'
+  microsoftSqlServerAdminPassword: 'N0t@P@ssword'
+  microsoftKeyVaultName: 'nzmoebase0000at'
+  microsoftCosmoDbName: 'nzmoebaseatDataFactory'
+  microsoftCosmoDbDatabaseName: 'dataFactory'
+  microsoftCosmoDbDatabaseCollectionName: 'syncData'
+  microsoftCosmoDbDatabaseCollectionScale: 1000
+  microsoftDataFactoryName: 'nzmoebaseatDataFactory'
+  custom_vars_TemplatesRelease: '0.3'
+  custom_vars_resourceNameTemplate: 'NZ-MOE-{APPID}-{BRANCHNAME}-{ENVID}'
+  custom_vars_envIdentifier: 'AT'
+  azureSubscriptionIdentifier: 'EDU-MOE-BASE-TestDev-01 (b81bf4a6-b746-41c2-ac29-9466c74f2b57)'
+steps:
+- task: AzurePowerShell@3
+  displayName: 'START: Initilize Environment Variables'
+  inputs:
+    azureSubscription: '$(azureSubscriptionIdentifier)'
+
+    ScriptType: InlineScript
+
+    Inline: |
+     # Run shared Script (CaseSensitive):
+     $remotePSDirectory = "https://nzmoestartpublic.blob.core.windows.net/public/start/releases/$($ENV:custom_vars_TemplatesRelease)/arm-scripts/"
+     
+     $remotePSUrl = $remotePSDirectory + "pre.provision.environment.configure.variables.ps1"
+     
+     Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString($remotePSUrl))
+     
+
+    azurePowerShellVersion: LatestVersion
+
+- task: AzurePowerShell@3
+  displayName: 'Set Custom Variables'
+  inputs:
+    azureSubscription: '$(azureSubscriptionIdentifier)'
+
+    ScriptType: InlineScript
+
+    Inline: |
+     # Finding out if a keyvault exists. If it doesn't will create it later.
+     $status = Get-AzureRMKeyVault -VaultName '$(microsoftKeyVaultName)'
+     
+     $envIdentifier = 'false';
+     if($status) {
+       Write-Host "KeyVault found"
+       $envIdentifier = 'true';
+     } else {
+       Write-Host "KeyVault not found"
+     }
+     Write-Host "##vso[task.setvariable variable=microsoftKeyVaultExists;]$envIdentifier"
+     
+
+    azurePowerShellVersion: LatestVersion
+
+
+
+- task: AzureResourceGroupDeployment@2
+  displayName: 'Create DataFactory'
+  inputs:
+    
+    azureSubscription: '$(azureSubscriptionIdentifier)'
+
+    resourceGroupName: '$(custom_vars_resourceGroupName)'
+
+    location: '$(custom_vars_defaultResourceLocation)'
+    # The template and Params file:
+    # Will make a DataFactory
+    # Will make a SQL Server and Database
+    # WIll make a CosmoDb Account:
+    # Will (optinoally) maybe make a Keyvault.
+    # Will put into KV the following key: App-Module32-Extract-DocumentDb-AuthorisationKey (the Cosmo DB key )
+    csmFile: 05.Deliver/02.Pipeline/01.System/01.core/01.vsts/templates/arm.app.datafactory.json
+    csmParametersFile: 05.Deliver/02.Pipeline/01.System/01.core/01.vsts/templates/arm.app.datafactory.parameters.json
+    overrideParameters: '-microsoftSqlServerName "$(microsoftSqlServerName)" -microsoftSqlServerDatabaseName "$(microsoftSqlServerDatabaseName)" -microsoftSqlServerAdminLogin "$(microsoftSqlServerAdminLogin)" -microsoftSqlServerAdminPassword "$(microsoftSqlServerAdminPassword)" -microsoftCosmoDbDatabaseName "$(microsoftCosmoDbDatabaseName)" -microsoftCosmoDbDatabaseCollectionName "$(microsoftCosmoDbDatabaseCollectionName)" -microsoftKeyVaultName "$(microsoftKeyVaultName)" -microsoftKeyVaultExists "$(microsoftKeyVaultExists)"'
+    # Took deployment output (json) and made it into a outptstring. Probably not needed anymore.
+    deploymentOutputs: dataFactoryArmOutputString
+
+- task: AzurePowerShell@3
+  displayName: 'Set Permissions To Keyvault'
+  inputs:
+    azureSubscription: '$(azureSubscriptionIdentifier)'
+    ScriptType: InlineScript
+    azurePowerShellVersion: LatestVersion
+    # Provide this Build Agent permission to the KeyVault:
+    Inline: |
+     $context = Get-AzureRmContext ;
+     $contextAccount= $context.Account ;
+     $servicePrincipal= (Get-AzureRmADServicePrincipal -ServicePrincipalName $contextAccount) 
+     $id = $servicePrincipal.Id
+     write-host ($servicePrincipal| ConvertTo-Json)
+     write-host ($id)
+     Set-AzureRmKeyVaultAccessPolicy -VaultName '$(microsoftKeyVaultName)' -ObjectId "$id" -PermissionsToSecrets Get,List
+
+ 
+
+- task: AzureKeyVault@1
+  displayName: 'Extract Keyvault Parameters'
+  inputs:
+    azureSubscription: '$(azureSubscriptionIdentifier)'
+
+    KeyVaultName: $(microsoftKeyVaultName)
+    # Extract the KV that was put in via the Template
+    SecretsFilter: 'App-Module32-Extract-DocumentDb-AuthorisationKey'
+
+
+
+# Wow. Create Database from SQL (is idempotent, using IF EXISTS syntax in sql)
+- task: SqlAzureDacpacDeployment@1
+  displayName: 'Create Watermark Table'
+  inputs:
+    azureSubscription: '$(azureSubscriptionIdentifier)'
+
+    ServerName: '$(microsoftSqlServerName).database.windows.net'
+
+    DatabaseName: '$(microsoftSqlServerDatabaseName)'
+
+    SqlUsername: '$(microsoftSqlServerAdminLogin)'
+
+    SqlPassword: '$(microsoftSqlServerAdminPassword)'
+
+    TaskNameSelector: SqlTask
+
+    SqlFile: '05.Deliver/02.Pipeline/01.System/01.core/01.vsts/scripts/CreateSyncDatabase.sql'
+
+
+# Run external powershell using a PS
+# Idempotent creation of CosmoDB Collection than Database within it.
+- task: AzurePowerShell@3
+  displayName: 'Create CosmoDb Collection'
+  inputs:
+    azureSubscription: '$(azureSubscriptionIdentifier)'
+
+    ScriptPath: '05.Deliver/02.Pipeline/01.System/01.core/01.vsts/scripts/initialise.datafactory.ps1'
+
+    ScriptArguments: '"$(App-Module32-Extract-DocumentDb-AuthorisationKey)" "$(microsoftCosmoDbName)" "$(microsoftCosmoDbDatabaseName)" "$(microsoftCosmoDbDatabaseCollectionName)" "$(microsoftCosmoDbDatabaseCollectionScale)"'
+
+    FailOnStandardError: true
+
+    azurePowerShellVersion: LatestVersion
+
+

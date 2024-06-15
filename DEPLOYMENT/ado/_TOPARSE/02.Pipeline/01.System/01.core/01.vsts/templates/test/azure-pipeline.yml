@@ -1,0 +1,753 @@
+  # ----------------------------------------
+  # PREREQUISITES:
+  # Define Build Variables:
+  # - [optional] custom_vars_RegionId (eg: NZ)
+  # - custom_vars_OrganisationId (eg: MYORG)
+  # - custom_vars_ProjectId (eg: MYPROJ)
+  # - custom_vars_SystemId  (eg: MYSYS)
+  # - custom_vars_EnvironmentId (eg: BT, ST, UT, PP, PR)
+  # Setup a VSTS Project specific Service Connection to an Azure Connection
+  # - You need it to set 'pipelineVar_AzureServiceConnectionName'
+  # Setup a Project Nuget Feed
+  # - Upstreamed to nuget.org
+  # - Get it's ID for 'pipelineVar_ProjectNugetFeedId' below
+  # ----------------------------------------
+
+resources:
+- repo: self
+  clean: true
+queue:
+  name: Hosted VS2017
+  demands: 
+  - azureps
+  - msbuild
+  - visualstudio
+
+variables:
+  # YAML Variables `$(...)` developed here take precedence over VSTS defined variables, which take precedence over
+  # ENV variables. Yaml Variables set here do not automatically become ENV variables. To push these variables into ENV
+  # that they cross task boundaries, as well as are available to Powershell scripts imported from files, use `setvariable`: 
+  # Write-Host "##vso[task.setvariable variable=SOMEENVVARNAME]"$SomeCustomVar 
+  # Note that we all agree it's an absurd syntax. Moving on...
+  # See: https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=vsts&tabs=yaml%2Cbatch
+  # To be frank...VSTS is moving away from VSTS variables in many ways...
+  # ----------------------------------------
+  BuildConfiguration: 'release'
+  BuildPlatform: 'any cpu'
+  misc: $(Build.SourcesDirectory)
+  system.debug: 'true'
+  # ----------------------------------------
+  # The Version of the START Template release.
+  # This works in conjunction with `custom_vars_STARTBaseUrl` 
+  # as the base url to START scripts and Templates.
+  custom_vars_TemplatesRelease: '2.4'
+  # ----------------------------------------
+  # VARIABLES SPECIFIC TO VSTS PROJECT:
+  # TO CUSTOMIZE: The reference to the VSTS Project's                                                                                                       Service Connection to Azure
+  # (as defined under Project Settings/Build and Release/Service Connections). 
+  # It is the *Name* given to the Service connection, not the Subscription Guid, or the drop down value. 
+  pipelineVar_AzureServiceConnectionName: 'EDU-MOE-BASE-TestDev-01 (b81bf4a6-b746-41c2-ac29-9466c74f2b57)' 
+  # TO CUSTOMIZE: Define where to find Nuget packages. 
+  # This is the ID of the Custom Feed developed in the project: 
+  # The Pipeline Nuget Feed is currently from using the the current VSTS visual pipleline and using the ViewYaml button when selecting a nuget feed from the drop down.                          
+  # See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/package/nuget?view=vsts
+  pipelineVar_ProjectNugetFeedId: 'd4222fd9-635b-4bdb-8b7f-c671a117057f' 
+  # ----------------------------------------
+  # Project Resource Identifiers:
+  custom_vars_OrganisationFullName: "Ministry of Education"
+  custom_vars_RegionId: 'NZ'
+  custom_vars_OrganisationId: 'MOE'
+  custom_vars_ProjectId: 'UIP'
+  custom_vars_SystemId: 'TEST'
+  # NZ-MOE-START-XMPL-0000-BT
+  # 123456789012345678901234
+  # NZMOESTARTEXMPL0000BT  <- OK. Total chars are <21 (leaving 3 for identifying between resources of same type)
+  # Note, goes in as 'custom_vars_envIdentifier' but prescript makes it available as 'ENV:custom_vars_environmentId'
+  # Note: this variable sets both the resourceNameTemplate, and the ARM templates environment variable override package.
+  custom_vars_envIdentifier: 'BT' # Build pipeline usually sets this to BT. Deploy pipelines set to ST,UT,PP or PR
+  # Resource Group and Resource Name template, using above variables.
+  custom_vars_resourceNameTemplate: '{REGIONID}-{ORGID}-{PROJECTID}-{SYSTEMID}-{BRANCHNAME}-{ENVID}'
+  # ----------------------------------------
+  # VARIABLES SPECIFIC TO THE BUILD PIPELINE'S LOCAL SCRIPTS:
+  # TO CUSTOMIZE: Specify the location to the organisation's RuleSet to use
+  # when compiling the Solution
+  pipelineVar_RelativePathToDeploymentFiles: '05.Deliver/02.Pipeline/01.System/01.core/01.vsts/templates/test'
+  # TO CUSTOMIZE: Note: MSBuild will need the full path, not just the relative path:
+  pipelineVar_RelativePathToOrganisationCodeAnalysisRuleSet: $(build.sourcesdirectory)/$(pipelineVar_RelativePathToDeploymentFiles)/standardOrganisationRules.ruleset
+  # TO CUSTOMIZE: Git Relative Path to the entrypoint ARM Template:
+  pipelineVar_ARMTemplateRelativeLocalPath: $(pipelineVar_RelativePathToDeploymentFiles)/arm.app.json
+  # TO CUSTOMIZE: Git Relative Path to the entrypoint ARM Parameters:
+  pipelineVar_ARMParametersRelativeLocalPath: $(pipelineVar_RelativePathToDeploymentFiles)/arm.app.parameters.json
+  # ----------------------------------------
+
+  # VARIABLES SPECIFIC TO THE BUILD PIPELINE:
+  # TO CUSTOMIZE: Set path to where to find the project solution
+  # within the code that is downloaded from the repository, in order
+  # for MSBuild to build the assemblies:
+  pipelineVar_SolutionSearchPath : '06.Deliver\02.System\**\*.sln'
+  # TO CUSTOMIZE: 
+  # The (case sensitive, I believe) solution name is used by MSDeploy
+  # to find the MSBuild's output (the webdeploy zip) in the 
+  # 'build.artifactstagingdirectory' directory, to deploy it to the 
+  # target app service:
+  pipelineVar_solutionName: 'App.Host'
+  # ----------------------------------------
+  # VARIABLES SPECIFIC TO THE BUILD PIPELINE's REMOTE SCRIPTS:
+  # Note: the following vars don't change from project to project.
+  # Since they don't change they probably really need to be defined as variables. 
+  # They're only here to make understanding of the mechanics a bit easier.
+  #
+  # The url to the START base folder, where common organisation ARM Templates and Scripts can be found.
+  custom_vars_STARTBaseUrl : 'https://nzmoestartpublic.blob.core.windows.net/public/start/releases/$(custom_vars_TemplatesRelease)'
+  # Under the above base folder is the templates folder (although not used in this file):
+  pipelineVar_STARTTemplatesBaseUrl : '$(custom_vars_STARTBaseUrl)/arm-templates/'
+  # And Script folder (where the pre- and post- powershells are downloaded from and run in a couple of this file's tasks). 
+  pipelineVar_STARTScriptsBaseUrl : '$(custom_vars_STARTBaseUrl)/arm-scripts/'
+  # ----------------------------------------
+  # VARIABLES SPECIFIC TO THE BUILD PIPELINE:
+  # Note: the following vars don't change from project to project.
+  # Since they don't change they probably really need to be defined as variables. 
+  # They're only here to make understanding of the mechanics a bit easier.
+  #
+  # All Unit and Integration/Behaviour Tests Assemblies have to follow the 
+  # following naming pattern in order to be properly picked up and processed.
+  pipelineVar_unitTestAssembliesNameFormat: "*test*.dll"
+  pipelineVar_UXTestAssembliesNameFormat: "*ux.test*.dll"
+  # the output directory shared between MSBuild (when the solution is built into a WebDeploy directory)
+  # and MSDeploy (when the webdeploy package is deployed to the target environment) 
+  # Note, MSBuild (I think) expects backslashes. MSDeploy expects forward slashes.
+  # In either case, end with a Slash:
+  pipelineVar_StagingSolutionPackageLocation: '$(build.artifactstagingdirectory)\SOLUTION\' 
+  pipelineVar_StagingArmTemplatesLocation: '$(build.artifactstagingdirectory)\ARM'
+
+  # Once published, integration tests are run. But they shouldn't take forever.
+  pipelineVar_IntegrationTestsTimeoutInMinutes: 30
+
+  # There is a case for publishing the Packages to Nuget, although 
+  # this task can also be done as a seperate Publish task later.
+  pipelineVar_PublishNugetPackages : false
+  # Caution: this should almost always be set to false. 
+  pipelineVar_DestroyEnvironmentWhenBuildCompleted: false
+  # ----------------------------------------
+
+  microsoftKeyVaultName : "nzmoeuipinit"
+
+steps:
+
+
+- task: AzurePowerShell@3
+  enabled: false
+  displayName: 'Set Permissions To Keyvault'
+  inputs:
+    azureSubscription: '$(pipelineVar_AzureServiceConnectionName)'
+
+    ScriptType: InlineScript
+
+    Inline: |
+     $context = Get-AzureRmContext ;
+     $contextAccount= $context.Account ;
+     $servicePrincipal= (Get-AzureRmADServicePrincipal -ServicePrincipalName $contextAccount) 
+     $id = $servicePrincipal.Id
+     write-host ($servicePrincipal| ConvertTo-Json)
+     write-host ($id)
+     Set-AzureRmKeyVaultAccessPolicy -VaultName '$(microsoftKeyVaultName)' -ObjectId "$id" -PermissionsToSecrets Get,List
+
+    azurePowerShellVersion: LatestVersion
+
+- task: AzureKeyVault@1
+  displayName: 'Extract Keyvault Parameters'
+  enabled: false
+  inputs:
+    azureSubscription: '$(pipelineVar_AzureServiceConnectionName)'
+
+    KeyVaultName: $(microsoftKeyVaultName)
+
+    SecretsFilter: 'microsoft-sql-servers-administrator-login-name-uip-bt'
+
+
+# ----------------------------------------
+# Acquires a specific version of .NET Core from internet or the tools cache and adds it to the PATH. 
+# Use this task to change the version of .NET Core used in subsequent tasks.
+# See: https://stackoverflow.com/questions/45717283/vsts-build-packages-failed-to-restore-unable-to-resolve-netstandard-library/45739237#45739237
+# See: https://github.com/dotnet/core/blob/master/release-notes/releases.csv
+# ----------------------------------------
+- task: DotNetCoreInstaller@0
+  displayName: 'Use .NET Core sdk 2.0.0'
+  enabled: false
+  inputs:
+    version: 2.0.0
+
+# ----------------------------------------
+# START: Develop Array of Dispensation codes
+# SCANR, which runs later in the pipeline, 
+# will stop the build if it uncovers 
+# insecure deployment configurations.
+# But not all configuration settings can be 
+# immediately sorted out (eg, might have a 
+# dependency on an organisation wide infrastructure
+# component, such as a WAF, that is not yet 
+# available). In such cases a dispensation code
+# is required in order to temporarily get past
+# the test. This is where one develops an array 
+# of the dispensation tokens.
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/powershell?view=vsts
+# ----------------------------------------
+- task: PowerShell@2
+  displayName: 'START: Specify any SCANR Dispensations'
+  enabled: true
+  inputs:
+    targetType: inline
+    #arguments: # Optional
+    # An array of one or more SCANR Tokens go here
+    # eg: "https://nzmoestartpublic.blob.core.windows.net/private/base/*/d9f625e0-36eb-cc6f-8be0-b7f36eeb4a31.txt?sp=r&st=2018-09-10T02:30:50Z&se=2019-01-01T09:30:50Z&spr=https&sv=2017-11-09&sig=Kepv2UpzeafN4EvvJzhL3%2BuomO%2FlkCZ1eXhGktkiYYs%3D&sr=b", 
+    script: |
+      $dispensations = @(
+        "https://nzmoestartpublic.blob.core.windows.net/private/uip/core/*/2d76381d-6f45-d120-0bf1-f2a5f5074a18.txt?sp=r&st=2018-09-21T02:45:48Z&se=2018-10-31T09:45:48Z&spr=https&sv=2017-11-09&sig=sElpn3kuC6Boa%2Fw7CvxaKFAMMamwi3qZEXaemfd6yDY%3D&sr=b",	
+        "https://nzmoestartpublic.blob.core.windows.net/private/uip/core/*/b57b7d54-393c-a952-8b4c-36a25d8bce0e.txt?sp=r&st=2018-09-21T02:46:52Z&se=2018-10-31T09:46:52Z&spr=https&sv=2017-11-09&sig=cOXmg2b7nSKKm92D089Vsh3pLB1kqeLR7Zavye%2BzlEs%3D&sr=b",
+        "https://nzmoestartpublic.blob.core.windows.net/private/uip/core/*/d9f625e0-36eb-cc6f-8be0-b7f36eeb4a31.txt?sp=r&st=2018-09-21T02:47:11Z&se=2018-10-31T09:47:11Z&spr=https&sv=2017-11-09&sig=xxCaWuZjqcHLBIfyE5KvkD5CjZlN62xKdyFs6Dj6qKo%3D&sr=b",
+        "https://nzmoestartpublic.blob.core.windows.net/private/uip/core/*/f8344a5a-395c-c88e-330d-e3902cc653e9.txt?sp=r&st=2018-09-21T02:47:39Z&se=2018-10-31T09:47:39Z&spr=https&sv=2017-11-09&sig=qy9X1Mnnc5R7xGWYd9FGn8zIhFyzWfReFjy82ml2Kxw%3D&sr=b"
+      )
+      $ENV:CUSTOM_VARS_SERIALIZEDDISPENSATIONS = ConvertTo-Json ($dispensations) -Compress
+      Write-Host $(system.teamProject)
+      Write-Host "##vso[task.setvariable variable=CUSTOM_VARS_SERIALIZEDDISPENSATIONS]"$ENV:CUSTOM_VARS_SERIALIZEDDISPENSATIONS
+      Write-Host ("dispensations array has been serialized. Count:" + $ENV:CUSTOM_VARS_SERIALIZEDDISPENSATIONS.length)
+
+
+# ----------------------------------------
+# START: Run Remote Init Script
+# Task downloads a START provided script
+# from a remote well-known location which
+# develops multiple ENV-ironment variables 
+# that subsequent tasks can leverage.
+# The script requires access to Azure
+# in order to record both the current Subscription
+# and AD Tenant backing the current User 
+# (ie, the build server's service account).
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-powershell?view=vsts
+# ----------------------------------------
+- task: AzurePowerShell@3
+  displayName: 'START: Initilize Environment Variables'
+  enabled: true
+  inputs:
+    azurePowerShellVersion: LatestVersion
+    # Sourced from build pipeline Custom variables:
+    azureSubscription: '$(pipelineVar_AzureServiceConnectionName)'
+    ScriptType: InlineScript
+    Inline: |
+      # Develop url to remote script (CaseSensitive):
+      $remotePSDirectory = "$(pipelineVar_STARTScriptsBaseUrl)"
+      $remotePSUrl = $remotePSDirectory + "pre.provision.environment.configure.variables.ps1"
+      # download and execute:     
+      Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString($remotePSUrl))
+
+
+# ----------------------------------------
+# Render Common Environment variables
+# This task is not strictly required, but
+# it demonstrates that the environment 
+# variables developed in the previous task 
+# are available to this and subsequent
+# tasks to leverage as needed.
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/powershell?view=vsts
+# ----------------------------------------
+- task: PowerShell@2
+  displayName: 'START: Available Environment Variables'
+  enabled: true
+  inputs:
+    targetType: inline
+    #arguments: # Optional
+    script: |
+      # Develop url to remote script (CaseSensitive):
+      $remotePSDirectory = "$(pipelineVar_STARTScriptsBaseUrl)"
+      $remotePSUrl = $remotePSDirectory + "pre.provision.environment.show.available.variables.ps1"
+      # download and execute:     
+      Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString($remotePSUrl))
+
+
+# ----------------------------------------
+# Verify Common Environment variables
+# This task is not strictly required, but
+# it demonstrates that the environment 
+# variables developed in the previous task 
+# are available to this and subsequent
+# tasks to leverage as needed.
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/powershell?view=vsts
+# ----------------------------------------
+- task: PowerShell@2
+  displayName: 'START: Available Environment Variables'
+  enabled: true
+  inputs:
+    targetType: inline
+    #arguments: # Optional
+    script: |
+      write-host "Env variables:"
+      write-host "custom_vars_TemplatesRelease        : $(custom_vars_TemplatesRelease)"
+      write-host "custom_vars_OrganisationFullName    : $(custom_vars_OrganisationFullName)"
+      write-host "custom_vars_RegionId                : $(custom_vars_RegionId)"
+      write-host "custom_vars_OrganisationId          : $(custom_vars_OrganisationId)"
+      write-host "custom_vars_ProjectId               : $(custom_vars_ProjectId)"
+      write-host "custom_vars_SystemId                : $(custom_vars_SystemId)"
+      write-host "custom_vars_BranchId                : $(custom_vars_BranchId)"
+      write-host "custom_vars_EnvironmentId           : $(custom_vars_EnvironmentId)"
+      write-host "custom_vars_resourceNameTemplate    : $(custom_vars_resourceNameTemplate)"
+      write-host "custom_vars_defaultResourceLocation : $(custom_vars_defaultResourceLocation)"
+      write-host "custom_vars_resourceGroupName       : $(custom_vars_resourceGroupName)"
+      write-host "custom_vars_defaultResourceName     : $(custom_vars_defaultResourceName)"
+      write-host "custom_vars_defaultUrl              : $(custom_vars_default_website_Url)"
+      write-host "custom_vars_subscriptionId          : $(custom_vars_subscriptionId)"
+      write-host "custom_vars_default_website_url     : $(custom_vars_default_website_url)"
+      write-host "custom_vars_serializedDispensations : $(custom_vars_serializedDispensations)"
+      write-host "Not yet known (as resource group not yet created), include:"
+      write-host "- custom_vars_principalId (of created App Web Site)"
+      write-host "- custom_vars_defaultWebSiteResourceName (its resource name)"
+      write-host "- custom_vars_defaultStorageAccountResourceName"
+
+# ----------------------------------------
+# After the common environmental variables
+# have been provisioned, here's a fine place
+# to develop any other custom ones used by
+# this project.
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/powershell?view=vsts
+# ----------------------------------------
+- task: PowerShell@2
+  displayName: 'Develop Project Specific Environment Variables'
+  enabled: true
+  inputs:
+    targetType: inline
+    #arguments: # Optional
+    script: |
+      write-verbose "Optionally perform project-specific configuration tasks before starting in earnest..."
+
+# ----------------------------------------
+# For .NET Core 
+# (may not always be required)     
+# ----------------------------------------
+- task: NuGetToolInstaller@0
+  displayName: 'Use NuGet 4.4.1'
+  inputs:
+    versionSpec: 4.4.1      
+      
+# ----------------------------------------
+# Restore Nuget packages from the provided
+# feed.
+# Notes:
+# The task points towards a VSTS Project
+# specific Nuget source, which in turn
+# cascades to the general Nuget Source via 
+# setting it up as an Upstream Sources.
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/package/nuget?view=vsts
+# See: https://docs.microsoft.com/en-us/azure/devops/artifacts/concepts/upstream-sources?view=vsts#benefits-of-upstream-sources
+# ----------------------------------------
+- task: NuGetCommand@2
+  displayName: 'Restore NuGet Packages'
+  enabled: false
+  inputs:
+    command: 'restore' #default command is restore
+    restoreSolution: '$(pipelineVar_SolutionSearchPath)' # specifies which solution to 'expand'
+    feedsToUse: 'select' # [select|config]
+    vstsFeed:  '$(pipelineVar_ProjectNugetFeedId)' # required when feedsToUse=select.
+
+# ----------------------------------------
+# After we have all the Nuget packages, 
+# Build the solution.
+# Notes:
+# PackageAsSingleFile ensures the output
+# is packaged as a Zip.
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/build/visual-studio-build?view=vsts
+# ----------------------------------------
+- task: VSBuild@1
+  displayName: 'Build the .NET Solution'
+  enabled: false
+  inputs:
+    configuration: '$(BuildConfiguration)'
+    platform: '$(BuildPlatform)'
+    solution: '$(pipelineVar_SolutionSearchPath)'
+    # Run Code Analysis, based on organisation rules,
+    # Then package the whole solution up as a webdeploy
+    # zip file, dropped into a specified directory,
+    # (under the 'pipelineVar_StagingSolutionPackageLocation') where it 
+    # can later be found when needed to be deployed
+    # to a target environment.
+    # The output will stay in this staging directory
+    # till it is 'published', which happens in a subsequent tasks.
+    msbuildArgs: '/p:nowarn=3030 /p:WarningsNotAsErrors=3030 /p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:AutoParameterizationWebConfigConnectionStrings=False /p:SkipInvalidConfigurations=true /p:PackageLocation="$(pipelineVar_StagingSolutionPackageLocation)\"'
+
+
+# ----------------------------------------
+# The following is a prerequisite for 
+# subsequent tasks that unit test the 
+# solution artefacts built in the previous
+# task.
+# ----------------------------------------
+- task: VisualStudioTestPlatformInstaller@1
+  displayName: 'VsTest Platform Installer'
+  enabled: false
+
+# ----------------------------------------
+# The solution artefacts are built, and
+# are available for logic unit testing 
+# (ie, not dynamic behavioural testing)
+# Notes:
+# the task looks within the output directory
+# (/debug or \release) for  all dll's ending
+# with 'test*.dll' as long as they
+# are not test assemblies for behavioural
+# testing ('ux.test*.dll'). 
+# Behavioural testing is performed later.
+# See: https://github.com/Microsoft/vstest
+# ----------------------------------------
+- task: VSTest@2
+  displayName: 'Unit Test the .NET Built Artefacts'
+  enabled: false
+  inputs:
+    vsTestVersion: toolsInstaller
+    platform: '$(BuildPlatform)'
+    configuration: '$(BuildConfiguration)'
+    codeCoverageEnabled: true
+    testAssemblyVer2: |
+      **\$(BuildConfiguration)\**\$(pipelineVar_unitTestAssembliesNameFormat)
+      !**\$(BuildConfiguration)\**\$(pipelineVar_UXTestAssembliesNameFormat)
+      !**\*TestAdapter.dll
+      !**\obj\**
+
+
+
+# ----------------------------------------
+# (DISABLED) Cleanup
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/delete-files?view=vsts
+# ----------------------------------------
+- task: DeleteFiles@1
+  displayName: 'Delete Resharper'
+  enabled: false
+  inputs:
+    SourceFolder: '$(Build.ArtifactStagingDirectory)'
+    Contents: 'JetBrains.ReSharper*'
+
+# ----------------------------------------
+# Build the target environment.
+# Solution Artefacts have been been built, 
+# and they have passed logical unit tests,
+# so one can reasonably expect the solution
+# to survive being deployed. We just need
+# an environment to deploy to. 
+# The task creates (or reuses) a new 
+# Resource Group in the target Subscription,
+# then invokes an ARM template found within
+# the source code.
+# The ARM template in turn invokes linked 
+# child ARM templates. The url is dependent
+# on the `custom_vars_TemplatesRelease` variables.
+# All the resources created follow a naming template
+# as provided by the `custom_vars_resourceNameTemplate`
+# which was provisioned by the START:Init Variables script.
+# The `environmentId` is used to specify what variable
+# package to use within the ARM template (each environment
+# gets its own target set. For example...not all enviroments
+# will want an webapp SKU of S1, etc).
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-resource-group-deployment?view=vsts
+# ----------------------------------------
+- task: AzureResourceGroupDeployment@2
+  displayName: 'START: Create/Update Resource Group and Resources'
+  enabled: true
+  inputs:
+    # Sourced from build pipeline Custom variables:
+    azureSubscription: '$(pipelineVar_AzureServiceConnectionName)'
+    # Sourced from Environment variable set by START:
+    location: '$(custom_vars_defaultResourceLocation)'
+    # Sourced from Environment variable set by START:
+    resourceGroupName: '$(custom_vars_resourceGroupName)'
+    # Sourced from build pipeline Custom variables:
+    csmFile: '$(pipelineVar_ARMTemplateRelativeLocalPath)'
+    # Sourced from build pipeline Custom variables:
+    csmParametersFile: '$(pipelineVar_ARMParametersRelativeLocalPath)'
+    # provide parameters that override the ones provided within
+    # the parameters file.
+    overrideParameters: '-templatesRelease "$(custom_vars_TemplatesRelease)" -environmentId "$(custom_vars_environmentId)" -resourceNameTemplate "$(custom_vars_resourceNameTemplate)"'
+
+
+# ----------------------------------------
+# Although we could predict some vars right
+# from the start, some values could only
+# be determined after the resources were created.
+# We get these from the the output retrieved
+# from invoking the ARM Templates.
+# For example, tenantId and subscriptionId were 
+# determinable right from the start (we obtained those
+# within the Pre- script). We could even have 
+# taken a strong guess as to the name of the Web App Service 
+# as it probably is the same as custom_vars_defaultResourceName.
+# The `defaultStorageAccountResourceName` value could also
+# be determined (it's needed in order for subsequent scripts
+# to be able to run powershell, to set permissions, etc.)
+# But We certainly can't get the MSI defined principalId
+# until after the ARM template has created the
+# app Service.
+# ----------------------------------------
+- task: keesschollaart.arm-outputs.arm-outputs.ARM Outputs@3
+  displayName: 'Build Custom Vars from ARM Outputs'
+  enabled: true
+  inputs:
+    # Sourced from build pipeline Custom variables:
+    ConnectedServiceNameARM: '$(pipelineVar_AzureServiceConnectionName)'
+    # Sourced from Environment variable set by START:
+    resourceGroupName: '$(custom_vars_resourceGroupName)'
+    # look for the following output vars:
+    outputNames: 'tenantId,subscriptionId,principalId,defaultWebSiteResourceName,defaultStorageAccountResourceName'
+    # then prefix all the output variables with the following.
+    # And create ENV variables that subsequent Tasks can 
+    # leverage.
+    prefix: 'custom_vars_'
+
+
+# ----------------------------------------
+# The build environment has been created
+# using ARM templates.
+# But not everything can be done using ARM
+# templates.
+# So a final START step is to download
+# a well-known remote post-provision script
+# to complete some actions, using powershell.
+# examples might be authentication of service
+# accounts to a resource, etc.
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-powershell?view=vsts
+# ----------------------------------------
+- task: AzurePowerShell@3
+  displayName: 'START: Invoke Remote Post-Deployment Script'
+  enabled: true
+  inputs:
+    azurePowerShellVersion: LatestVersion
+    # Sourced from build pipeline Custom variables:
+    azureSubscription: '$(pipelineVar_AzureServiceConnectionName)'
+    ScriptType: InlineScript
+    Inline: |
+      # Develop url to remote script (CaseSensitive):
+      $remotePSDirectory = "$(custom_vars_STARTBaseUrl)/arm-scripts/"
+      $remotePSUrl = $remotePSDirectory + "post.provision.environment.ps1"
+        
+      # download and execute:     
+      Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString($remotePSUrl))
+
+
+# ----------------------------------------
+# Run Custom cleanup scripts.
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-powershell?view=vsts
+# ----------------------------------------
+- task: AzurePowerShell@3
+  displayName: 'Run custom Post-Deployment Scripts'
+  inputs:
+    azurePowerShellVersion: LatestVersion
+    # Sourced from build pipeline Custom variables:
+    azureSubscription: '$(pipelineVar_AzureServiceConnectionName)'
+    ScriptType: InlineScript
+    Inline: |
+      try {
+        # Assign Rights to Default StorageAccount
+        $scope = "/subscriptions/$($ENV:custom_vars_subscriptionId)/resourceGroups/$(custom_vars_resourceGroupName)/providers/Microsoft.Storage/storageAccounts/$($ENV:custom_vars_defaultStorageAccountResourceName)"
+        Write-host "$($ENV:custom_vars_principalId) : $scope"
+        New-AzureRmRoleAssignment -ObjectId $ENV:custom_vars_principalId -RoleDefinitionName "Contributor" -Scope $scope
+      }
+      catch {
+        Write-Host "***** WARNING:" $_.Exception.Message
+      }
+
+
+# ----------------------------------------
+# Invoke SCANR over the resources that the previous
+# ARM template and post-script configured.
+# Any configuration errors found will require
+# Dispensation Codes to get around.
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-powershell?view=vsts
+# ----------------------------------------
+- task: AzurePowerShell@3
+  displayName: 'START: Invoke SCANR over Resource Group''s Resources'
+  enabled: true
+  inputs:
+    azurePowerShellVersion: LatestVersion
+    # Sourced from build pipeline Custom variables:
+    azureSubscription: '$(pipelineVar_AzureServiceConnectionName)'
+    ScriptType: InlineScript
+    Inline: |
+     $url = "$(custom_vars_STARTBaseUrl)/arm-scripts/shared/scanr.ps1"
+     Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString($url));
+     $dispensations = (convertfrom-json $ENV:CUSTOM_VARS_SERIALIZEDDISPENSATIONS)
+     Write-Host $ENV:CUSTOM_VARS_SERIALIZEDDISPENSATIONS
+     Write-Host ("dispensations array has been serialized. Count:" + $dispensations.length)
+     SCANR-UnitTest -subscriptionId:(Get-AzureRmContext).Subscription -resourceGroupName:$(custom_vars_resourceGroupName) -projectIdentifier:$(system.teamProject) -dispensations:$dispensations
+
+
+# ----------------------------------------
+# The Build Artefacts have been built, they
+# passed unit testing. We've also built a 
+# target environment, and scanned it for 
+# security issues using SCANR. 
+# It's time to deploy the Built Artefacts
+# to the target environment.
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/targets/webapp?view=vsts&tabs=yaml
+# ----------------------------------------
+- task: AzureRmWebAppDeployment@3
+  displayName: 'Deploy Web Deploy package to target Web App Service'
+  enabled: false
+  inputs:
+    # Sourced from build pipeline Custom variables:
+    azureSubscription: '$(pipelineVar_AzureServiceConnectionName)'
+    enableXmlVariableSubstitution: true
+    # We're deploying using MsDeploy:
+    UseWebDeploy: true
+    # to the default App Service (the name was obtained
+    # when we converted the ARM template's Output variables
+    # to Environment variables:
+    WebAppName: '$(custom_vars_defaultWebSiteResourceName)'
+    # The package will be in the staging directory,
+    # where MSBuild put it as previously instructed.
+    # The package name is the name of the Solution, zipped.
+    # Not sure if it is case sensitive, but will err on it being so.
+    Package: '$(pipelineVar_StagingSolutionPackageLocation)/**/$(pipelineVar_solutionName).zip'
+    TakeAppOfflineFlag: true
+
+
+# ----------------------------------------
+# The Web Deploy package has been unpacked
+# to the target App Service within the 
+# target Resource Group. 
+# But the first request will be slow.
+# So might cause subsequent dynamic tests
+# to fail. So wake up the Web App Service.
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/powershell?view=vsts
+# ----------------------------------------
+- task: PowerShell@2
+  displayName: 'Wake up Web App Service before running Tests'
+  enabled: false
+  inputs:
+    targetType: inline
+    #arguments: # Optional
+    script: |
+      try 
+      { 
+        Start-Sleep -Seconds 20
+        $request = Invoke-RestMethod -TimeoutSec 600 -Method Get -ContentType application/json -Uri $(custom_vars_default_website_url) 
+        Write-Host  $request.StatusCode
+      }
+      catch  {
+        $request = $_.Exception.Response 
+        Write-Host "Failing the release as backend is not working as intended"
+        Write-Host  $request.StatusCode
+        Write-Host $_.Exception
+        exit -1 
+      }
+
+
+# ----------------------------------------
+# The newly deployed site is awake. 
+# Test it by looking for Assemblies that
+# end with 'ux.test*.dll'
+# See: https://github.com/Microsoft/vstest
+# ----------------------------------------
+- task: VSTest@2
+  displayName: 'Run Integration / Acceptance Tests'
+  enabled: false
+  # Note that tests cannot run longer than the following value:
+  timeoutInMinutes: 30 #'$(pipelineVar_IntegrationTestsTimeoutInMinutes)'
+  inputs:
+    rerunFailedTests: false
+    testAssemblyVer2: |
+     **\$(pipelineVar_UXTestAssembliesNameFormat)
+     !**\*TestAdapter.dll
+     !**\obj\**
+    uiTests: true
+    vsTestVersion: toolsInstaller
+
+
+# ----------------------------------------
+# The solution's webdeploy has been built, deployed
+# and the deployed artefact tested. 
+# So the webdeploy is deemed deployable. 
+# But when we deploy it, we want it to be on exactly 
+# the same ARM templates we used this time. 
+# So package up the ARM templates, and put it in
+# under 'build.artifactstagingdirectory', but in
+# a separate folder to the WebDeploy package. 
+# The output will stay in this staging directory
+# till it is 'published', which happens in a subsequent tasks.
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/copy-files?view=vsts
+# ----------------------------------------
+- task: CopyFiles@2
+  displayName: 'Copy ARM Templates'
+  enabled: true
+  inputs:
+    SourceFolder: '$(pipelineVar_RelativePathToDeploymentFiles)'
+    # Note that the output is right beside where
+    # MSBuild created the WebDeploy package,
+    # so it's something like '$(build.artifactstagingdirectory)\ARM'
+    TargetFolder: '$(pipelineVar_StagingArmTemplatesLocation)'
+
+
+# ----------------------------------------
+# Publish everything in the staging directory.
+# In other words, this means:
+# $(build.artifactstagingdirectory)\SOLUTION, where the WebDeploy Zip can be found
+# $(build.artifactstagingdirectory)\ARM, where the ARM templates can be found.
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/publish-build-artifacts?view=vsts
+# ----------------------------------------
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
+  enabled: true
+  inputs:
+    PathtoPublish: '$(build.artifactstagingdirectory)'
+
+
+# ----------------------------------------
+# Publish the output from SCANR as well. 
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/test/publish-test-results?view=vsts&tabs=yaml
+# ----------------------------------------
+- task: PublishTestResults@2
+  condition: succeededOrFailed()
+  displayName: 'Publish Test Results **/TEST-*.xml'
+  enabled: true
+  inputs:
+    testRunner: NUnit
+
+    testRunTitle: 'Infrastructure Tests'
+
+# ----------------------------------------
+# Push Packages to Project Nuget Destination
+# See: https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/utility/powershell?view=vsts
+# ----------------------------------------
+- task: PowerShell@2
+  displayName: 'Conditionally Publish Assemblies to Project Nuget'
+  enabled: false
+  inputs:
+    targetType: inline
+    #arguments: # Optional
+    #script: nuget.exe push -Source "ERS" -ApiKey VSTS my_package.nupkg
+    #errorActionPreference: 'stop' # Optional. Options: stop, continue, silentlyContinue
+    #failOnStderr: false # Optional
+    #ignoreLASTEXITCODE: false # Optional
+    #pwsh: false # Optional
+    #workingDirectory: # Optional
+
+
+# ----------------------------------------
+# Conditionally, Delete the Resource Group when finished.
+# Note that you have to be severely broke to want to do this
+# everytime, as there building/destroying environments 
+# takes lots of time, afecting work output. Additionally
+# it doesn't really reflect how you want to deploy (in an
+# idempotent manner). But the task is there in case there is
+# another use case.
+# See:https://docs.microsoft.com/en-us/azure/devops/pipelines/tasks/deploy/azure-resource-group-deployment?view=vsts
+# ----------------------------------------
+- task: AzureResourceGroupDeployment@2
+  displayName: 'Azure Deployment:Delete Resource Group'
+  enabled: false #'$(pipelineVar_DestroyEnvironmentWhenBuildCompleted)'
+  inputs:
+    # Sourced from build pipeline Custom variables:
+    azureSubscription: '$(pipelineVar_AzureServiceConnectionName)'
+
+    action: DeleteRG
+
+    # Sourced from Environment variable set by START:
+    resourceGroupName: '$(custom_vars_resourceGroupName)'
+
+  continueOnError: true
+  condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+

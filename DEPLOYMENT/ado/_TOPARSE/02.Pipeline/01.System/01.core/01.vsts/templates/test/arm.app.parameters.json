@@ -1,0 +1,78 @@
+// -=-=-=-=-1-=-=-=-=-2-=-=-=-=-3-=-=-=-=-4-=-=-=-=-5-=-=-=-=-6-=-=-=-=-7-=-=-=-=-8
+// INSTRUCTIONS
+// -=-=-=-=-1-=-=-=-=-2-=-=-=-=-3-=-=-=-=-4-=-=-=-=-5-=-=-=-=-6-=-=-=-=-7-=-=-=-=-8
+// * This template is not much more a system specific (ie, in the system's source code)
+//   simplified wrapper of a remote, much more complex, 'assembly'.
+// * For the most part, leave it alone, concentrating on filling in the associated parameters file
+//   within which you'll have to at consider providing the
+// * Some Template vars are not provided by the Parameters file, but are provided
+//   via the Build Agent, including:
+//   * PrincipalId
+// * Some params can be provided either in Params, or via Build Agent:
+//   * environmentId
+//   * templatesRelease
+// * REFER TO CONFIDENTIAL INFO SAFELY USING 'REFERENCE' INSTEAD OF 'VALUE':
+//   # "value": "EVERYBODY CAN SEE THIS...NOT GOOD"
+//   "reference": {"keyVault": {"id": "/subscriptions/{TODO:SUBID}/resourcegroups/{TODO:RGNAME}/providers/Microsoft.KeyVault/vaults/{TODO:KVNAME}"},"secretName": "{SOMEKEY}"}
+// -=-=-=-=-1-=-=-=-=-2-=-=-=-=-3-=-=-=-=-4-=-=-=-=-5-=-=-=-=-6-=-=-=-=-7-=-=-=-=-8
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    // -=-=-=-=-1-=-=-=-=-2-=-=-=-=-3-=-=-=-=-4-=-=-=-=-5-=-=-=-=-6-=-=-=-=-7-=-=-=-=-8
+    // PARAMETERS: SECURITY
+    // -=-=-=-=-1-=-=-=-=-2-=-=-=-=-3-=-=-=-=-4-=-=-=-=-5-=-=-=-=-6-=-=-=-=-7-=-=-=-=-8
+    // The http based root url from which to download referenced Assembly ARM Templates. 
+    // In most cases will be an Url to a Storage Account Container Url to which 
+    // newly downloaded Source Files (just the ARM Templates) are copied to
+    "linkedAssembliesArmTemplateRootUrl": {
+      "value": "https://nzmoestartpublic.blob.core.windows.net/public/start/releases/{TEMPLATESRELEASE}/arm-templates/assemblies/"
+      //"value": "https://nzmoestartpublic.blob.core.windows.net/public/start/releases/0.0/arm-templates/assemblies/"
+    },
+    // The http based root url from which to download referenced linked Resource ARM Templates. 
+    // In most cases will be an Url to a Storage Account Container Url to which 
+    // newly downloaded Source Files (just the ARM Templates) are copied to
+    "linkedResourcesArmTemplateRootUrl": {
+      "value": "https://nzmoestartpublic.blob.core.windows.net/public/start/releases/{TEMPLATESRELEASE}/arm-templates/resources/"
+      //"value": "https://nzmoestartpublic.blob.core.windows.net/public/start/releases/0.0/arm-templates/resources/"
+    },
+    // -=-=-=-=-1-=-=-=-=-2-=-=-=-=-3-=-=-=-=-4-=-=-=-=-5-=-=-=-=-6-=-=-=-=-7-=-=-=-=-8
+    // PARAMETERS: RESOURCE GROUP / NAME TEMPLATE
+    // -=-=-=-=-1-=-=-=-=-2-=-=-=-=-3-=-=-=-=-4-=-=-=-=-5-=-=-=-=-6-=-=-=-=-7-=-=-=-=-8
+    // Not required (ARM Template uses [resourceGroup().name]), but if you wish, provide something like
+    // {regioncode}-{orgid}-{projectid}-{systemid}-{branchid}-{envid}
+    // "resourceNameTemplate": {
+    //   "value": "{REPLACE:resourceNameTemplate}"
+    // },
+
+    // -=-=-=-=-1-=-=-=-=-2-=-=-=-=-3-=-=-=-=-4-=-=-=-=-5-=-=-=-=-6-=-=-=-=-7-=-=-=-=-8
+    // PARAMETERS: ENVIRONMENT
+    // -=-=-=-=-1-=-=-=-=-2-=-=-=-=-3-=-=-=-=-4-=-=-=-=-5-=-=-=-=-6-=-=-=-=-7-=-=-=-=-8
+    "environmentId": {"value": ""},
+    // See Accompanying documentation for what flags can be used here:
+    "environmentOverrides": {
+      "value": {
+      "--": {},
+      "default": {}
+      }
+    },
+    // -=-=-=-=-1-=-=-=-=-2-=-=-=-=-3-=-=-=-=-4-=-=-=-=-5-=-=-=-=-6-=-=-=-=-7-=-=-=-=-8
+    // PARAMETERS: MICROSOFT / SQL / SERVERS
+    // -=-=-=-=-1-=-=-=-=-2-=-=-=-=-3-=-=-=-=-4-=-=-=-=-5-=-=-=-=-6-=-=-=-=-7-=-=-=-=-8
+    "microsoftSqlServersAdministratorLogin": {
+      "value": "NOTADMIN"
+    },
+    "microsoftSqlServersAdministratorLoginPassword": {
+      "value": "N0t@P@ssword"
+    },
+    // -=-=-=-=-1-=-=-=-=-2-=-=-=-=-3-=-=-=-=-4-=-=-=-=-5-=-=-=-=-6-=-=-=-=-7-=-=-=-=-8
+    // PARAMETERS: MICROSOFT / WEB / CERTIFICATES
+    // -=-=-=-=-1-=-=-=-=-2-=-=-=-=-3-=-=-=-=-4-=-=-=-=-5-=-=-=-=-6-=-=-=-=-7-=-=-=-=-8
+    "microsoftWebCertificatesPfxBase64": {
+      "value": ""
+    },
+    "microsoftWebCertificatesPfxPassword": {
+      "value": ""
+    }
+  }
+}

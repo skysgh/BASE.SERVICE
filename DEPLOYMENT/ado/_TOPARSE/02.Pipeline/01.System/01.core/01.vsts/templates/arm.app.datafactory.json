@@ -1,0 +1,678 @@
+{
+    "contentVersion": "1.0.0.0",
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "parameters": {
+        "microsoftCenterResourceName": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().name]",
+            "metadata": {
+              "description": "the resource group name"
+            }
+        },
+        "microsoftCenterLocation": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "allowedValues": [
+              "australiaeast",
+              "australiasoutheast",
+              "southeastasia"
+            ],
+            "metadata": {
+              "description": "Optional. The location for the SQL service. This is parameterised because SQL servers cannot be deployed in all regions for subscription types."
+            }
+        },
+        "microsoftSqlServerName": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+              "description": "Optional, SQL Server Name"
+            }
+        },
+        "microsoftSqlServerAdminLogin": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+              "description": "Required, SQL Server Login"
+            }
+        },
+        "microsoftSqlServerAdminPassword": {
+            "type": "string",
+            "minLength": 1,
+            "metadata": {
+              "description": "Required, SQL Server Password"
+            }
+        },
+        "microsoftSqlServerDatabaseName": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+              "description": "Optional, SQL Database Name"
+            }
+        },
+        "microsoftSqlServerDatabaseCollation": {
+            "type": "string",
+            "minLength": 1,
+            "defaultValue": "SQL_Latin1_General_CP1_CI_AS",
+            "allowedValues": [
+                "SQL_Latin1_General_CP1_CI_AS"
+            ],
+            "metadata": {
+                "description": "Default Collation of a database"
+            }
+        },
+        "microsoftSqlServerDatabaseEdition": {
+            "type": "string",
+            "defaultValue": "Basic",
+            "allowedValues": [
+                "Basic"
+            ],
+            "metadata": {
+                "description": "Want only Basic to be available as the database is only meant to be very tiny"
+            }
+        },
+        "microsoftSqlServerDatabaseResourceSku": {
+            "type": "string",
+            "defaultValue": "Basic",
+            "allowedValues": [
+                "Basic"
+            ],
+            "metadata": {
+                "description": "Describes the performance level of the Database. Default is Basic ($8/m, 5 DTU, sufficient for 2GB). S0 is plenty at 25$/m. 10 DTUs, 250Gb. Want only Basic to be available as the database is only meant to be very tiny"
+            }
+        },
+
+        "microsoftCosmoDbName": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "Optional, the name of the DB, that contains the Database"
+            }
+        },
+        "microsoftCosmoDbDatabaseName": {
+            "type": "string",
+            "defaultValue": "dataFactory",
+            "metadata": {
+                "description": "Optional, The name of the Database that contains the collections Just be aware that webconfig of the App.Host.Ate will need to be changed to accomodate any change of name"
+            }
+          },
+          "microsoftCosmoDbDatabaseCollectionName": {
+            "type": "string",
+            "defaultValue": "syncData",
+            "metadata": {
+                "description": "Optional, the name of the collections Just be aware that webconfig of the App.Host.Ate will need to be changed to accomodate any change of name"
+            }
+          },
+
+
+
+        "microsoftDataFactoryName": {
+            "type": "string",
+            "defaultValue": "nzmoebaseatDataFactory",
+            "metadata": {
+                "description": "The name of the the datafactory That we are are creating"
+            }
+        },
+        "microsoftDataFactoryLocation": {
+            "type": "string",
+            "allowedValues": [
+                "East US",
+                "East US 2",
+                "North Europe",
+                "Southeast Asia",
+                "West Central US",
+                "West Europe",
+                "West US"
+            ],
+            "defaultValue": "Southeast Asia",
+            "metadata": {
+                "description": "Location of the data factory. Australia is not availabe as of yet"
+            }
+        },
+        "microsoftDataFactoryLinkedServiceConnectionString": {
+            "type": "string",
+            "defaultValue": "**********",
+            "metadata": {
+                "description": "The Connection string of the On premise Sql "
+            }
+        },
+        "microsoftDataFactoryLinkedServiceUserName": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The username for the tunnel that is created for the on premise sql"
+            }
+        },
+        "microsoftDataFactoryLinkedServiceEncryptedCredential": {
+            "type": "string",
+            "defaultValue": "",
+            "metadata": {
+                "description": "The encrypted creditinal for the tunnel that is created for the on premise sql"
+            }
+        },
+
+        "microsoftKeyVaultExists": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "This is to determine whether "
+            }
+        },
+
+        "microsoftKeyVaultName": {
+            "type": "string",
+            "defaultValue": "",
+            "minLength": 1,
+            "metadata": {
+                "description": "The Keyvault Name"
+            }
+        },
+        "microsoftKeyVaultResourceSku": {
+            "type": "string",
+            "defaultValue": "Standard",
+            "allowedValues": [
+                "Standard",
+                "Premium"
+            ],
+            "metadata": {
+                "description": "Optional. TODO."
+            }
+        },
+        "microsoftKeyVaultTenantId": {
+            "type": "string",
+            "defaultValue": "[subscription().tenantId]",
+            "metadata": {
+                "description": "Optional. The AAD Tenant that manages rights to access the KeyVault."
+            }
+        },
+        "microsoftKeyVaultEnabledForDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Optional. Specifies if the vaults is enabled for VM or Service Fabric deployment"
+            }
+        },
+        "microsoftKeyVaultEnabledForTemplateDeployment": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Optional. An flag specifying if the vaults is enabled for ARM template deployment. This flag defaults to true as it allows ARM templates to access the KeyVault to retrieve secrets (eg: DB admin name and pwd)."
+            }
+        },
+        "microsoftKeyVaultEnabledForDiskEncryption": {
+            "type": "bool",
+            "defaultValue": true,
+            "metadata": {
+                "description": "Optional. Specifies if the vaults is enabled for volume encryption"
+            }
+        }
+
+    },
+    "variables": {
+        "microsoftCenterResourceName": "[take( toLower( replace( replace ( parameters('microsoftCenterResourceName') ,'-',''),'_','')), 24)]",
+        "microsoftSqlServerName": "[toLower(if(empty(parameters('microsoftSqlServerName')), parameters('microsoftDataFactoryName'), parameters('microsoftSqlServerName')))]",
+        "microsoftSqlServerDatabaseName": "[toLower(if(empty(parameters('microsoftSqlServerDatabaseName')), parameters('microsoftDataFactoryName'), parameters('microsoftSqlServerDatabaseName')))]",
+        "microsoftCosmoDbName": "[toLower(if(empty(parameters('microsoftCosmoDbName')), parameters('microsoftDataFactoryName'), parameters('microsoftCosmoDbName')))]",
+        "microsoftSqlServerConnectionString": {
+            "connection" : "[concat('Server=tcp:',variables('microsoftSqlServerName'),'.database.windows.net,1433;Database=', variables('microsoftSqlServerDatabaseName'), ';User ID=',parameters('microsoftSqlServerAdminLogin'),';Password=',parameters('microsoftSqlServerAdminPassword'),';Trusted_Connection=False;Encrypt=True;Connection Timeout=30')]"
+        },
+        "microsoftCosmoDataBase" : {
+            "connection" : "[concat('AccountEndpoint=https://', variables('microsoftCosmoDbName'), '.documents.azure.com:443/', ';Database=', parameters('microsoftCosmoDbDatabaseName'), ';AccountKey=' )]",
+            "fullyQualifiedId" : "[concat('Microsoft.DocumentDB/databaseAccounts/', variables('microsoftCosmoDbName'))]"
+        },
+        "microsoftKeyVault" : {
+            "name": "[if(empty(parameters('microsoftKeyVaultName')), variables('microsoftCenterResourceName'), parameters('microsoftKeyVaultName'))]"
+        },
+        "comments":  "Sql Databses need to be lower cased for some reason, so it made sense to make everything else lower case, In order to access other variables you need to put it in a nested object "
+    },
+    "resources": [
+        {
+            "name": "[variables('microsoftCosmoDbName')]",
+            "apiVersion": "2015-04-08",
+            "type": "Microsoft.DocumentDB/databaseAccounts",
+            "location": "[parameters('microsoftCenterLocation')]",
+            "kind" : "GlobalDocumentDB",
+            "properties": {
+                "name": "[variables('microsoftCosmoDbName')]",
+                "databaseAccountOfferType": "Standard",
+                "consistencyPolicy": {
+                    "defaultConsistencyLevel": "Session",
+                    "maxIntervalInSeconds": 5,
+                    "maxStalenessPrefix": 100
+                },
+                "capabilities": [
+                    {
+                    "name": "EnableTable"
+                    }
+                ]
+            },
+            "comments" : "Creation of A Cosmo db Account I have left some of it un-parameterized "
+        },
+        {
+            "name": "[variables('microsoftSqlServerName')]",
+            "type": "Microsoft.Sql/servers",
+            "location": "[parameters('microsoftCenterLocation')]",
+            "apiVersion": "2015-05-01-preview",
+            "identity": {
+            "type": "SystemAssigned"
+            },
+            "properties": {
+            "administratorLogin": "[parameters('microsoftSqlServerAdminLogin')]",
+            "administratorLoginPassword": "[parameters('microsoftSqlServerAdminPassword')]"
+            },
+            "comments": "Create an Sql Server using the input Admin and Password"
+        },
+        {
+            "name": "[concat(variables('microsoftSqlServerName'), '/firewallrules')]",
+            "type": "Microsoft.Sql/servers/firewallRules",
+            "apiVersion": "2015-05-01-preview",
+            "dependsOn": [
+                "[concat('Microsoft.Sql/servers/', variables('microsoftSqlServerName'))]"
+            ],
+            "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "0.0.0.0"
+            },
+            "comments": "Allow the SQL server to be open to Azure Services, As DataFactory needs to connect to the datafactory, hence opening it up see- https://social.msdn.microsoft.com/Forums/en-US/d93832bd-2089-4104-b530-de0d46105e87/determine-outgoing-ip-address-for-azure-data-factory?forum=AzureDataFactory & https://feedback.azure.com/forums/270578-data-factory/suggestions/20565967-identify-ip-address-of-data-factory"
+        },
+        {
+            "name": "[concat(variables('microsoftSqlServerName'), '/', variables('microsoftSqlServerDatabaseName'))]",
+            "type": "Microsoft.Sql/servers/databases",
+            "apiVersion": "2014-04-01",
+            "dependsOn": [
+                "[concat('Microsoft.Sql/servers/', variables('microsoftSqlServerName'))]"
+            ],
+            "location": "[parameters('microsoftCenterLocation')]",
+            "properties": {
+                "collation": "[parameters('microsoftSqlServerDatabaseCollation')]",
+                "edition": "[parameters('microsoftSqlServerDatabaseEdition')]",
+                "requestedServiceObjectiveName": "[parameters('microsoftSqlServerDatabaseResourceSku')]"
+            },
+            "comments": "Create a very small database container, an SQL script will populate the necessary tables and stored procedures later, "
+        },
+        {
+            "name": "[parameters('microsoftDataFactoryName')]",
+            "apiVersion": "2017-09-01-preview",
+            "type": "Microsoft.DataFactory/factories",
+            "location": "[parameters('microsoftDataFactoryLocation')]",
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+
+            },
+            "resources": [
+                {
+                    "name": "[concat(parameters('microsoftDataFactoryName'), '/nzmoecommon')]",
+                    "type": "Microsoft.DataFactory/factories/integrationRuntimes",
+                    "apiVersion": "2017-09-01-preview",
+                    "dependsOn": [
+                        "[concat('Microsoft.DataFactory/factories/', parameters('microsoftDataFactoryName'))]"
+                    ],
+                    "properties": {
+                        "type": "SelfHosted",
+                        "additionalProperties": {},
+                        "description": "BASE Self Hosted Integrated Runtime"
+                    }, 
+                    "comments": "Creating an Intergration runtime reference to get keys etc. this is used for the connection between MOE and Azure"
+                },
+                
+                {
+                    "name": "[concat(parameters('microsoftDataFactoryName'), '/MOEST_EdBaseStaging_LinkedService')]",
+                    "type": "Microsoft.DataFactory/factories/linkedservices",
+                    "apiVersion": "2017-09-01-preview",
+                    "dependsOn": [
+                        "[concat('Microsoft.DataFactory/factories/', parameters('microsoftDataFactoryName'))]",
+                        "nzmoecommon"
+                    ],
+                    "properties": {
+                        "description": "Linked Service to EdBaseStaging database on eva.db.moest.govt.nz (tst-sql0650.moest.govt.nz) using MOEST\\srvEdBaseStagingADF",
+                        "type": "SqlServer",
+                        "typeProperties": {
+                            "connectionString": {
+                                "type": "SecureString",
+                                "value": "[parameters('microsoftDataFactoryLinkedServiceConnectionString')]"
+                            },
+                            "userName": "[parameters('microsoftDataFactoryLinkedServiceUserName')]",
+                            "encryptedCredential": "[parameters('microsoftDataFactoryLinkedServiceEncryptedCredential')]"
+                        },
+                        "connectVia": {
+                            "referenceName": "nzmoecommon",
+                            "type": "IntegrationRuntimeReference"
+                        },
+                        "comments": "Creates the connection, parameters have to be passed from the source for this, I cannot create this manually"
+                    }
+                },
+                {
+                    "name": "[concat(parameters('microsoftDataFactoryName'), '/MOEST_Base_WatermarkDB')]", 
+                    "type": "Microsoft.DataFactory/factories/linkedservices",
+                    "apiVersion": "2017-09-01-preview",
+                    "dependsOn": [
+                        "[concat('Microsoft.DataFactory/factories/', parameters('microsoftDataFactoryName'))]",
+                        "[concat('Microsoft.Sql/servers/', variables('microsoftSqlServerName'))]"
+                    ],
+                    "properties": {
+                        "type": "AzureSqlDatabase",
+                        "typeProperties": {
+                            "connectionString": {
+                                "type": "SecureString",
+                                "value": "[variables('microsoftSqlServerConnectionString').connection]"
+                            }
+                        }
+                    },
+                    "comments": "Creates a connection for the database watermark sql server"
+                },
+                {
+                    "name": "[concat(parameters('microsoftDataFactoryName'), '/MOEST_Base_CosmoDB')]",
+                    "type": "Microsoft.DataFactory/factories/linkedservices",
+                    "apiVersion": "2017-09-01-preview",
+                    "dependsOn": [
+                        "[concat('Microsoft.DataFactory/factories/', parameters('microsoftDataFactoryName'))]",
+                        "[concat('Microsoft.DocumentDB/databaseAccounts/', variables('microsoftCosmoDbName'))]"
+                    ],
+                    "properties": {
+                        "type": "CosmosDb",
+                        "typeProperties": {
+                            "connectionString": {
+                                "type": "SecureString",
+                                "value": "[concat(variables('microsoftCosmoDataBase').connection,  listKeys(variables('microsoftCosmoDataBase').fullyQualifiedId, '2015-04-08').primaryMasterKey)]"
+                            }
+                        }
+                    },
+                    "comments": "Creates a connection to the Cosmo Db" 
+                },
+                {
+                    "name": "[concat(parameters('microsoftDataFactoryName'), '/DestinationDataset')]",
+                    "type": "Microsoft.DataFactory/factories/datasets",
+                    "apiVersion": "2017-09-01-preview",
+                    "dependsOn": [
+                        "[concat('Microsoft.DataFactory/factories/', parameters('microsoftDataFactoryName'))]",
+                        "MOEST_Base_CosmoDB",
+                        "MOEST_Base_WatermarkDB",
+                        "MOEST_EdBaseStaging_LinkedService"
+                    ],
+                    "properties": {
+                        "linkedServiceName": {
+                            "referenceName": "MOEST_Base_CosmoDB",
+                            "type": "LinkedServiceReference"
+                        },
+                        "folder": {
+                            "name": "EdBaseStaging"
+                        },
+                        "type": "DocumentDbCollection",
+                        "typeProperties": {
+                            "collectionName": "[parameters('microsoftCosmoDbDatabaseCollectionName')]"
+                        }
+                    },
+                    "comments": "Uses the Collection that was specified" 
+                },
+                {
+                    "name": "[concat(parameters('microsoftDataFactoryName'), '/SourceDataset')]",
+                    "type": "Microsoft.DataFactory/factories/datasets",
+                    "apiVersion": "2017-09-01-preview",
+                    "dependsOn": [
+                        "[concat('Microsoft.DataFactory/factories/', parameters('microsoftDataFactoryName'))]",
+                        "MOEST_Base_CosmoDB",
+                        "MOEST_Base_WatermarkDB",
+                        "MOEST_EdBaseStaging_LinkedService"
+                    ],
+                    "properties": {
+                        "linkedServiceName": {
+                            "referenceName": "MOEST_EdBaseStaging_LinkedService",
+                            "type": "LinkedServiceReference"
+                        },
+                        "folder": {
+                            "name": "EdBaseStaging"
+                        },
+                        "type": "SqlServerTable"
+                    },
+                    "comments": "Uses the Connection for the SQL tables, the actual tables will be used later as they need to be expandable" 
+                },
+                {
+                    "name": "[concat(parameters('microsoftDataFactoryName'), '/WatermarkDataset')]",
+                    "type": "Microsoft.DataFactory/factories/datasets",
+                    "apiVersion": "2017-09-01-preview",
+                    "dependsOn": [
+                        "[concat('Microsoft.DataFactory/factories/', parameters('microsoftDataFactoryName'))]",
+                        "MOEST_Base_CosmoDB",
+                        "MOEST_Base_WatermarkDB",
+                        "MOEST_EdBaseStaging_LinkedService"
+                    ],
+                    "properties": {
+                        "linkedServiceName": {
+                            "referenceName": "MOEST_Base_WatermarkDB",
+                            "type": "LinkedServiceReference"
+                        },
+                        "folder": {
+                            "name": "EdBaseStaging"
+                        },
+                        "type": "AzureSqlTable",
+                        "typeProperties": {
+                            "tableName": "[[dbo].[[WatermarkTable]"
+                        }
+                    },
+                    "comments": "Uses the Connection for the SQL watermark table" 
+                },
+                {
+                    "name": "[concat(parameters('microsoftDataFactoryName'), '/EdBaseStaging')]",
+                    "type": "Microsoft.DataFactory/factories/pipelines",
+                    "apiVersion": "2017-09-01-preview",
+                    "dependsOn": [
+                        "[concat('Microsoft.DataFactory/factories/', parameters('microsoftDataFactoryName'))]",
+                        "DestinationDataset",
+                        "SourceDataset",
+                        "WatermarkDataset"
+                    ],
+                    "properties": {
+                        "activities": [
+                            {
+                                "name": "IterateSqlTables",
+                                "type": "ForEach",
+                                "typeProperties": {
+                                    "items": {
+                                        "value": "@pipeline().parameters.tableList",
+                                        "type": "Expression"
+                                    },
+                                    "activities": [
+                                        {
+                                            "name": "LookupNewWaterMarkActivity",
+                                            "type": "Lookup",
+                                            "policy": {
+                                                "timeout": "7.00:00:00",
+                                                "retry": 0,
+                                                "retryIntervalInSeconds": 30,
+                                                "secureOutput": false
+                                            },
+                                            "typeProperties": {
+                                                "source": {
+                                                    "type": "SqlSource",
+                                                    "sqlReaderQuery": {
+                                                        "value": "select MAX(@{item().WaterMark_Column}) as NewWatermarkvalue from @{item().TABLE_NAME}",
+                                                        "type": "Expression"
+                                                    }
+                                                },
+                                                "dataset": {
+                                                    "referenceName": "SourceDataset",
+                                                    "type": "DatasetReference"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "name": "IncrementalCopyActivity",
+                                            "type": "Copy",
+                                            "dependsOn": [
+                                                {
+                                                    "activity": "LookupNewWaterMarkActivity",
+                                                    "dependencyConditions": [
+                                                        "Succeeded"
+                                                    ]
+                                                },
+                                                {
+                                                    "activity": "LookupOldWaterMarkActivity",
+                                                    "dependencyConditions": [
+                                                        "Succeeded"
+                                                    ]
+                                                }
+                                            ],
+                                            "policy": {
+                                                "timeout": "7.00:00:00",
+                                                "retry": 0,
+                                                "retryIntervalInSeconds": 30,
+                                                "secureOutput": false
+                                            },
+                                            "typeProperties": {
+                                                "source": {
+                                                    "type": "SqlSource",
+                                                    "sqlReaderQuery": {
+                                                        "value": "select t.*, '@{item().TABLE_NAME}' as Table_Name from @{item().TABLE_NAME} t\nwhere  t.@{item().WaterMark_Column} > '@{activity('LookupOldWaterMarkActivity').output.firstRow.WatermarkValue}' and t.@{item().WaterMark_Column} <= '@{activity('LookupNewWaterMarkActivity').output.firstRow.NewWatermarkvalue}' ",
+                                                        "type": "Expression"
+                                                    }
+                                                },
+                                                "sink": {
+                                                    "type": "DocumentDbCollectionSink",
+                                                    "nestingSeparator": ".",
+                                                    "writeBatchSize": 10000,
+                                                    "writeBehavior": "insert"
+                                                },
+                                                "enableStaging": false,
+                                                "dataIntegrationUnits": 0
+                                            },
+                                            "inputs": [
+                                                {
+                                                    "referenceName": "SourceDataset",
+                                                    "type": "DatasetReference"
+                                                }
+                                            ],
+                                            "outputs": [
+                                                {
+                                                    "referenceName": "DestinationDataset",
+                                                    "type": "DatasetReference"
+                                                }
+                                            ]
+                                        },
+                                        {
+                                            "name": "LookupOldWaterMarkActivity",
+                                            "type": "Lookup",
+                                            "policy": {
+                                                "timeout": "7.00:00:00",
+                                                "retry": 0,
+                                                "retryIntervalInSeconds": 30,
+                                                "secureOutput": false
+                                            },
+                                            "typeProperties": {
+                                                "source": {
+                                                    "type": "SqlSource",
+                                                    "sqlReaderQuery": {
+                                                        "value": "select cast(DATEADD(s,1, WatermarkValue) as datetime) as WatermarkValue,\n'@{item().TABLE_NAME}' as TableName\n from watermarktable where TableName  =  '@{item().TABLE_NAME}'\nUNION ALL\nselect  CONVERT(DATETIME,'2016-01-01') as WatermarkValue,'@{item().TABLE_NAME}' as TableName",
+                                                        "type": "Expression"
+                                                    }
+                                                },
+                                                "dataset": {
+                                                    "referenceName": "WatermarkDataset",
+                                                    "type": "DatasetReference"
+                                                }
+                                            }
+                                        },
+                                        {
+                                            "name": "UpdateWaterMark",
+                                            "type": "SqlServerStoredProcedure",
+                                            "dependsOn": [
+                                                {
+                                                    "activity": "IncrementalCopyActivity",
+                                                    "dependencyConditions": [
+                                                        "Succeeded"
+                                                    ]
+                                                }
+                                            ],
+                                            "policy": {
+                                                "timeout": "7.00:00:00",
+                                                "retry": 0,
+                                                "retryIntervalInSeconds": 30,
+                                                "secureOutput": false
+                                            },
+                                            "typeProperties": {
+                                                "storedProcedureName": "[[dbo].[[sp_write_watermark]",
+                                                "storedProcedureParameters": {
+                                                    "LastModifiedtime": {
+                                                        "value": {
+                                                            "value": "@{activity('LookupNewWaterMarkActivity').output.firstRow.NewWatermarkvalue}",
+                                                            "type": "Expression"
+                                                        },
+                                                        "type": "DateTime"
+                                                    },
+                                                    "TableName": {
+                                                        "value": {
+                                                            "value": "@{activity('LookupOldWaterMarkActivity').output.firstRow.TableName}",
+                                                            "type": "Expression"
+                                                        },
+                                                        "type": "String"
+                                                    }
+                                                }
+                                            },
+                                            "linkedServiceName": {
+                                                "referenceName": "MOEST_Base_WatermarkDB",
+                                                "type": "LinkedServiceReference"
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        ],
+                        "parameters": {
+                            "tableList": {
+                                "type": "Object",
+                                "defaultValue": [
+                                    {
+                                        "TABLE_NAME": "Schools_Directory_API_Summary",
+                                        "WaterMark_Column": "ModifiedDate"
+                                    },
+                                    {
+                                        "TABLE_NAME": "AT_Eligibility_API",
+                                        "WaterMark_Column": "ModifiedDateTime"
+                                    }
+                                ]
+                            }
+                        },
+                        "comments": "The actual code see the wiki for more information about how this works" 
+                    }
+                }
+            ]
+        },
+        {
+            "condition": "[not(parameters('microsoftKeyVaultExists'))]",
+            "name": "[variables('microsoftKeyVault').name]",
+            "type": "Microsoft.KeyVault/vaults",
+            "apiVersion": "2018-02-14",
+            "location": "[parameters('microsoftCenterLocation')]",
+            "properties": {
+                "tenantId":"[parameters('microsoftKeyVaultTenantId')]",
+                "sku": {
+                    "family": "A",
+                    "name": "[parameters('microsoftKeyVaultResourceSku')]"
+                },
+                "accessPolicies" : [],
+                "vaultUri": "[variables('microsoftKeyVault').name]",
+                "enabledForDeployment": "[parameters('microsoftKeyVaultEnabledForDeployment')]",
+                "enabledForDiskEncryption": "[parameters('microsoftKeyVaultEnabledForDiskEncryption')]",
+                "enabledForTemplateDeployment": "[parameters('microsoftKeyVaultEnabledForTemplateDeployment')]"
+            },
+            "comments": "This Relies on the variable if the keyvault exists prior to running this script, The reason why this is needed is because that creating a keyvault will BLOW all access policies out. This is bad and undesirable behaviour, So write a powershell script before hand to check if the keyvault exists and pass it in, SO BE CAREFUL"
+        },
+        {
+            "type": "Microsoft.KeyVault/vaults/secrets",
+            "name": "[concat(variables('microsoftKeyVault').name, '/', 'App-Module32-Extract-DocumentDb-AuthorisationKey')]",
+            "apiVersion": "2015-06-01",
+            "properties": {
+                "contentType": "text/plain",
+                "value": "[listKeys(variables('microsoftCosmoDataBase').fullyQualifiedId, '2015-04-08').primaryMasterKey]"
+            },
+            "dependsOn": [
+                "[concat('Microsoft.DocumentDB/databaseAccounts/', variables('microsoftCosmoDbName'))]",
+                "[concat('Microsoft.KeyVault/vaults/', variables('microsoftKeyVault').name)]"
+            ],
+            "comments" : "Add the key setting to the keyvault, we will extract it out as part of the next stage. rather than outputting it as variable"
+        }
+    ],
+    "outputs": {
+        
+    }
+}
