@@ -18,6 +18,10 @@
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
     <WarningLevel>9999</WarningLevel>
   </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="_TOPARSE\Class1.cs" />
+  </ItemGroup>
 	
 	
   <ItemGroup>
@@ -36,6 +40,7 @@
 	
   <ItemGroup>
     <Folder Include="Views\" />
+    <Folder Include="_TOPARSE\" />
   </ItemGroup>
 
 </Project>
