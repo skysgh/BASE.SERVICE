@@ -43,9 +43,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Interfaces
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Interfaces.UI.Web", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Interfaces.UI.Web\App.Modules.Core.Interfaces.UI.Web.csproj", "{08573A51-7D14-4EDD-8893-ADADEA12EC2F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.Modules.Core.Infrastructure.Services.Azure", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Infrastructure.Services.Azure\App.Modules.Core.Infrastructure.Services.Azure.csproj", "{7E035B17-499B-4288-905E-93DD0D612F00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Infrastructure.Services.Azure", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Infrastructure.Services.Azure\App.Modules.Core.Infrastructure.Services.Azure.csproj", "{7E035B17-499B-4288-905E-93DD0D612F00}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "App.Modules.Core.Infrastructure.Services.AWS", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Infrastructure.Services.AWS\App.Modules.Core.Infrastructure.Services.AWS.csproj", "{C5C781CE-CE8D-42CB-A64E-BD121D0072DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Infrastructure.Services.AWS", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Infrastructure.Services.AWS\App.Modules.Core.Infrastructure.Services.AWS.csproj", "{C5C781CE-CE8D-42CB-A64E-BD121D0072DF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Infrastructure.IoC.StructureMap", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Infrastructure.IoC.StructureMap\App.Modules.Core.Infrastructure.IoC.StructureMap.csproj", "{F8E61238-CC2A-4745-8A57-F94C1498B41D}"
 EndProject
