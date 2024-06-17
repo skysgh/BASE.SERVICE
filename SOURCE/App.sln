@@ -11,21 +11,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02.HOST", "02.HOST", "{B915
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SUBMODULES", "SUBMODULES", "{2BB13C55-B363-4C47-9C1A-73548AD01C4E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Substrate", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Substrate\App.Modules.Core.Substrate.csproj", "{2E76F16F-7AC9-46FA-A175-123E9FED1103}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Substrate", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Substrate\App.Modules.Sys.Substrate.csproj", "{2E76F16F-7AC9-46FA-A175-123E9FED1103}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Substrate.Contracts", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Substrate.Contracts\App.Modules.Core.Substrate.Contracts.csproj", "{EDAF3AC5-3F0C-46E4-A1EE-2EF1236A6757}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Substrate.Contracts", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Substrate.Contracts\App.Modules.Sys.Substrate.Contracts.csproj", "{EDAF3AC5-3F0C-46E4-A1EE-2EF1236A6757}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Infrastructure", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Infrastructure\App.Modules.Core.Infrastructure.csproj", "{4760BE1A-93C4-497F-81FB-422B68898C16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Infrastructure", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Infrastructure\App.Modules.Sys.Infrastructure.csproj", "{4760BE1A-93C4-497F-81FB-422B68898C16}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Domain", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Domain\App.Modules.Core.Domain.csproj", "{EBAAB1F4-0059-4AB7-B701-7FE347116D40}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Domain", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Domain\App.Modules.Sys.Domain.csproj", "{EBAAB1F4-0059-4AB7-B701-7FE347116D40}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Application", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Application\App.Modules.Core.Application.csproj", "{4402CBD0-54FF-48ED-B379-BB759F251772}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Application", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Application\App.Modules.Sys.Application.csproj", "{4402CBD0-54FF-48ED-B379-BB759F251772}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Infrastructure.IoC.Autofac", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Infrastructure.IoC.Autofac\App.Modules.Core.Infrastructure.IoC.Autofac.csproj", "{19264969-F823-46A5-A546-06F24C57A1F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Infrastructure.IoC.Autofac", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Infrastructure.IoC.Autofac\App.Modules.Sys.Infrastructure.IoC.Autofac.csproj", "{19264969-F823-46A5-A546-06F24C57A1F4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Infrastructure.Data.EF", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Infrastructure.Data.EF\App.Modules.Core.Infrastructure.Data.EF.csproj", "{31418C4C-AF90-40AF-923D-BD353FA2D88D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Infrastructure.Data.EF", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Infrastructure.Data.EF\App.Modules.Sys.Infrastructure.Data.EF.csproj", "{31418C4C-AF90-40AF-923D-BD353FA2D88D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Infrastructure.IoC.Lamar", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Infrastructure.IoC.Lamar\App.Modules.Core.Infrastructure.IoC.Lamar.csproj", "{5DC55FD0-3FE2-40BB-A7C0-18E4F043524F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Infrastructure.IoC.Lamar", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Infrastructure.IoC.Lamar\App.Modules.Sys.Infrastructure.IoC.Lamar.csproj", "{5DC55FD0-3FE2-40BB-A7C0-18E4F043524F}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "11.Interfaces", "11.Interfaces", "{599B98D3-129C-430F-B1C2-169EFE8FC163}"
 EndProject
@@ -33,25 +33,25 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "12.DDD", "12.DDD", "{891045
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "00.SYS", "00.SYS", "{82511981-9DB7-4C1D-ADE0-E8B7DB289A2D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Interfaces.API.REST", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Interfaces.API.REST\App.Modules.Core.Interfaces.API.REST.csproj", "{204A6EC8-3C1A-4EBF-975F-F0E882ACBEC0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Interfaces.API.REST", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Interfaces.API.REST\App.Modules.Sys.Interfaces.API.REST.csproj", "{204A6EC8-3C1A-4EBF-975F-F0E882ACBEC0}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Interfaces.API.ODATA", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Interfaces.API.ODATA\App.Modules.Core.Interfaces.API.ODATA.csproj", "{F264B1A4-107F-434C-87A3-D2E9EA100BCE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Interfaces.API.ODATA", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Interfaces.API.ODATA\App.Modules.Sys.Interfaces.API.ODATA.csproj", "{F264B1A4-107F-434C-87A3-D2E9EA100BCE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Interfaces.API.GraphQL", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Interfaces.API.GraphQL\App.Modules.Core.Interfaces.API.GraphQL.csproj", "{D533F076-7178-4B74-BBF1-6F72AE973D54}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Interfaces.API.GraphQL", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Interfaces.API.GraphQL\App.Modules.Sys.Interfaces.API.GraphQL.csproj", "{D533F076-7178-4B74-BBF1-6F72AE973D54}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Interfaces.Models", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Interfaces.Models\App.Modules.Core.Interfaces.Models.csproj", "{98C95A42-8C5F-4307-876B-CC197B7A41C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Interfaces.Models", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Interfaces.Models\App.Modules.Sys.Interfaces.Models.csproj", "{98C95A42-8C5F-4307-876B-CC197B7A41C2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Interfaces.UI.Web", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Interfaces.UI.Web\App.Modules.Core.Interfaces.UI.Web.csproj", "{08573A51-7D14-4EDD-8893-ADADEA12EC2F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Interfaces.UI.Web", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Interfaces.UI.Web\App.Modules.Sys.Interfaces.UI.Web.csproj", "{08573A51-7D14-4EDD-8893-ADADEA12EC2F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Infrastructure.Services.Azure", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Infrastructure.Services.Azure\App.Modules.Core.Infrastructure.Services.Azure.csproj", "{7E035B17-499B-4288-905E-93DD0D612F00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Infrastructure.Services.Azure", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Infrastructure.Services.Azure\App.Modules.Sys.Infrastructure.Services.Azure.csproj", "{7E035B17-499B-4288-905E-93DD0D612F00}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Infrastructure.Services.AWS", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Infrastructure.Services.AWS\App.Modules.Core.Infrastructure.Services.AWS.csproj", "{C5C781CE-CE8D-42CB-A64E-BD121D0072DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Infrastructure.Services.AWS", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Infrastructure.Services.AWS\App.Modules.Sys.Infrastructure.Services.AWS.csproj", "{C5C781CE-CE8D-42CB-A64E-BD121D0072DF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Infrastructure.IoC.StructureMap", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Core.Infrastructure.IoC.StructureMap\App.Modules.Core.Infrastructure.IoC.StructureMap.csproj", "{F8E61238-CC2A-4745-8A57-F94C1498B41D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Infrastructure.IoC.StructureMap", "..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Infrastructure.IoC.StructureMap\App.Modules.Sys.Infrastructure.IoC.StructureMap.csproj", "{F8E61238-CC2A-4745-8A57-F94C1498B41D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02.SOCIAL", "02.SOCIAL", "{5B5F7651-8C10-440E-8586-0976C1C77759}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Substrate", "..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Sys.Substrate\App.Modules.Sys.Substrate.csproj", "{73220430-F736-4B68-9614-A497989615F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Substrate", "..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Core.Substrate\App.Modules.Core.Substrate.csproj", "{73220430-F736-4B68-9614-A497989615F1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "01.TEMPLATE", "01.TEMPLATE", "{C637B1AE-F7D3-4376-B094-1BDB3546EF4B}"
 EndProject
@@ -67,17 +67,17 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.KWMODULENAME.In
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.KWMODULENAME.Interfaces.API.REST", "..\SUBMODULES\BASE.Modules.Template\SOURCE\App.Modules.KWMODULENAME.Interfaces.API.REST\App.Modules.KWMODULENAME.Interfaces.API.REST.csproj", "{5C2F8EB4-62D1-46F7-952A-A2BA1E0B9A59}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Domain", "..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Sys.Domain\App.Modules.Sys.Domain.csproj", "{7346425D-0CD6-45EF-B9DB-2ACAE8FE84A5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Domain", "..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Core.Domain\App.Modules.Core.Domain.csproj", "{7346425D-0CD6-45EF-B9DB-2ACAE8FE84A5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Infrastructure", "..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Sys.Infrastructure\App.Modules.Sys.Infrastructure.csproj", "{99A133CE-B2C5-40B9-93CE-F7241800BB13}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Infrastructure", "..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Core.Infrastructure\App.Modules.Core.Infrastructure.csproj", "{99A133CE-B2C5-40B9-93CE-F7241800BB13}"
+EndProject 
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Infrastructure.Data.Storage.Db.EF", "..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Core.Infrastructure.Data.Storage.Db.EF\App.Modules.Core.Infrastructure.Data.Storage.Db.EF.csproj", "{3A5ED6EC-5801-4E81-8D9B-1D575EA78A24}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Infrastructure.Data.Storage.Db.EF", "..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Sys.Infrastructure.Data.Storage.Db.EF\App.Modules.Sys.Infrastructure.Data.Storage.Db.EF.csproj", "{3A5ED6EC-5801-4E81-8D9B-1D575EA78A24}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Sys.Application", "..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Sys.Application\App.Modules.Sys.Application.csproj", "{3BA7009B-959E-495C-B70D-2350BD50082A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "App.Modules.Core.Application", "..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Core.Application\App.Modules.Core.Application.csproj", "{3BA7009B-959E-495C-B70D-2350BD50082A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "03.RESOURCES", "03.RESOURCES", "{A1FC087A-66B1-4937-815F-5EA3741B0163}"
 EndProject
-Global
+Global 
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
