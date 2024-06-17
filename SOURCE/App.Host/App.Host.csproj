@@ -31,10 +31,10 @@
 	
 	
   <ItemGroup>
-    <ProjectReference Include="..\..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Interfaces.API.ODATA\App.Modules.Sys.Interfaces.API.ODATA.csproj" />
-    <ProjectReference Include="..\..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Interfaces.API.REST\App.Modules.Sys.Interfaces.API.REST.csproj" />
-    <ProjectReference Include="..\..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Interfaces.Models\App.Modules.Sys.Interfaces.Models.csproj" />
-    <ProjectReference Include="..\..\SUBMODULES\BASE.LIB\SOURCE\App.Modules.Sys.Interfaces.UI.Web\App.Modules.Sys.Interfaces.UI.Web.csproj" />
+    <ProjectReference Include="..\..\SUBMODULES\BASE.Modules.Base\SOURCE\App.Modules.Base.Interfaces.API.ODATA\App.Modules.Base.Interfaces.API.ODATA.csproj" />
+    <ProjectReference Include="..\..\SUBMODULES\BASE.Modules.Base\SOURCE\App.Modules.Base.Interfaces.API.REST\App.Modules.Base.Interfaces.API.REST.csproj" />
+    <ProjectReference Include="..\..\SUBMODULES\BASE.Modules.Base\SOURCE\App.Modules.Base.Interfaces.Models\App.Modules.Base.Interfaces.Models.csproj" />
+    <ProjectReference Include="..\..\SUBMODULES\BASE.Modules.Base\SOURCE\App.Modules.Base.Interfaces.UI.Web\App.Modules.Base.Interfaces.UI.Web.csproj" />
   </ItemGroup>
 	
 	
