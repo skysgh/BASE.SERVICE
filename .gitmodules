@@ -10,6 +10,6 @@
 [submodule "SUBMODULES/BASE.Module.Template"]
 	path = SUBMODULES/BASE.Module.Template
 	url = https://github.com/skysgh/BASE.Module.Template.git
-[submodule "SUBMODULES/BASE.Modules.Sys"]
-	path = SUBMODULES/BASE.Modules.Sys
-	url = https://github.com/skysgh/BASE.Modules.Sys.git
+[submodule "SUBMODULES/BASE.Modules.Core"]
+	path = SUBMODULES/BASE.Modules.Core
+	url = https://github.com/skysgh/BASE.Modules.Core.git
