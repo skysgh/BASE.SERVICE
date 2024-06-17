@@ -1,6 +1,3 @@
-[submodule "SUBMODULES/BASE.LIB"]
-	path = SUBMODULES/BASE.LIB
-	url = https://github.com/skysgh/BASE.LIB
 [submodule "SUBMODULES/BASE.LIB.WIKI"]
 	path = SUBMODULES/BASE.LIB.WIKI
 	url = https://github.com/skysgh/BASE.LIB.wiki.git
