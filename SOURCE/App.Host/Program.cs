@@ -1,3 +1,6 @@
+using System.Reflection;
+using App.Modules.Base.Substrate.Contracts.Initialisation;
+using App.Modules.Base.Substrate.Models.Messages;
 
 namespace App.Host
 {
@@ -13,30 +16,51 @@ namespace App.Host
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var log = StartupLog.Instance;
 
-            // Add services to the container.
+            // =================================================================
+            // PHASE 1: MODULE DISCOVERY & SERVICE REGISTRATION
+            // =================================================================
+            log.Log(Microsoft.Extensions.Logging.LogLevel.Information, 
+                "=== INITIALIZING APPLICATION ===");
+            
+            // ONE CALL - discovers all modules recursively
+            var initializer = new EntryPointModuleAssemblyInitialiser();
+            var configBag = initializer.Initialize(
+                Assembly.GetEntryAssembly()!,
+                builder.Configuration,
+                log);
+            
+            // Register discovered services
+            foreach (var service in configBag.LocalServices)
+            {
+                builder.Services.Add(service);
+            }
 
+            // Add ASP.NET Core services
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // =================================================================
+            // PHASE 2: SERVICE CONFIGURERS (Credentials)
+            // =================================================================
+            foreach (var configurer in configBag.ServiceConfigurers)
+            {
+                configurer.ConfigureService(app.Services, builder.Configuration, log);
+            }
+
+            // Configure pipeline
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
-
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-
-
-            //app.UseAuthorization();
-
             app.MapControllers();
 
             app.Run();
