@@ -1,5 +1,5 @@
 using App.Host.Web.Controllers;
-using App.Modules.Base.Infrastructure.Storage.EF;
+using App.Modules.Sys.Infrastructure.Storage.EF;
 //using App.Host.Web.Startup;
 using Lamar.Microsoft.DependencyInjection;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;

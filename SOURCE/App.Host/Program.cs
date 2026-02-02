@@ -1,6 +1,6 @@
 using System.Reflection;
-using App.Modules.Base.Substrate.Contracts.Initialisation;
-using App.Modules.Base.Substrate.Models.Messages;
+using App.Modules.Sys.Shared.Models.Implementations;
+using App.Modules.Sys.Substrate.Contracts.Initialisation;
 
 namespace App.Host
 {

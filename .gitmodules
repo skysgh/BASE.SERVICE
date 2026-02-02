@@ -8,7 +8,7 @@
 	path = SUBMODULES/BASE.Modules.Core
 	url = https://github.com/skysgh/BASE.Modules.Core.git
 [submodule "SUBMODULES/BASE.Modules.Base"]
-	path = SUBMODULES/BASE.Modules.Base
+	path = SUBMODULES/BASE.Modules.Sys
 	url = https://github.com/skysgh/BASE.Modules.Base.git
 [submodule "SUBMODULES/BASE.Modules.Base.wiki"]
 	path = SUBMODULES/BASE.Modules.Base.wiki
