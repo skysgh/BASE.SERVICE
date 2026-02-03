@@ -57,6 +57,9 @@ namespace App.Host
             builder.Services.AddSingleton<App.Modules.Sys.Shared.Services.Caching.ICacheObjectRegistryService, 
                                          App.Modules.Sys.Infrastructure.Caching.Implementations.CacheObjectRegistryService>();
             
+            // Workspace validation service (cache-backed)
+            builder.Services.AddWorkspaceValidation();  // CRITICAL: Must be before AddWorkspaceRouting!
+            
             builder.Services.AddWorkspaceRouting();     // Routing middleware
 
             // =================================================================
