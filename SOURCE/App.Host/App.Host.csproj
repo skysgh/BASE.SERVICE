@@ -26,7 +26,6 @@
 	
   <ItemGroup>
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.0" />
   </ItemGroup>
 	
 	
@@ -36,6 +35,7 @@
     <ProjectReference Include="..\..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Sys.Interfaces.Models\App.Modules.Sys.Interfaces.Models.csproj" />
     <ProjectReference Include="..\..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Sys.Interfaces.UI.Web\App.Modules.Sys.Interfaces.UI.Web.csproj" />
     <ProjectReference Include="..\..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Sys.Infrastructure.Web\App.Modules.Sys.Infrastructure.Web.csproj" />
+    <ProjectReference Include="..\..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Sys.Infrastructure.Web.OpenAPI\App.Modules.Sys.Infrastructure.Web.OpenAPI.csproj" />
   </ItemGroup>
 	
 	

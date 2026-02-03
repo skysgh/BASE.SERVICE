@@ -2,6 +2,7 @@ using System.Reflection;
 using App.Modules.Sys.Shared.Models.Implementations;
 using App.Modules.Sys.Shared.Models.Enums;
 using App.Modules.Sys.Initialisation.Implementation;
+using App.Modules.Sys.Infrastructure.Web.OpenAPI.Extensions;
 
 namespace App.Host
 {
@@ -59,10 +60,11 @@ namespace App.Host
             
             builder.Services.AddWorkspaceRouting();     // Routing middleware
 
-            // Add ASP.NET Core services
+            // =================================================================
+            // API DOCUMENTATION - OpenAPI, Swagger, Scalar
+            // =================================================================
             builder.Services.AddControllers();
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddApiDocumentation();  // All three: OpenAPI + Swagger + Scalar
 
             var app = builder.Build();
 
@@ -110,11 +112,15 @@ namespace App.Host
                 configurer.Configure(app.Services);
             }
 
-            // Configure pipeline
+            // =================================================================
+            // API DOCUMENTATION MIDDLEWARE
+            // =================================================================
             if (app.Environment.IsDevelopment())
             {
-                app.UseSwagger();
-                app.UseSwaggerUI();
+                app.UseApiDocumentation(
+                    enableOpenApi: true,   // /documentation/apis/openapi/v1.json
+                    enableSwagger: true,   // /documentation/apis/swagger
+                    enableScalar: true);   // /documentation/apis/scalar
             }
 
             // =================================================================
