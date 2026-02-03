@@ -112,18 +112,18 @@ namespace App.Host
             }
 
             // =================================================================
-            // API DOCUMENTATION MIDDLEWARE (VERSIONED)
+            // API DOCUMENTATION MIDDLEWARE (ALL THREE!)
             // =================================================================
             if (app.Environment.IsDevelopment())
             {
                 // OpenAPI (native): /documentation/apis/v1/openapi.json
                 // Swagger UI: /documentation/apis/v1/swagger
-                // Scalar: TODO - Integration pending
+                // Scalar UI: /scalar/v1 (DeepSpace theme)
                 app.UseApiDocumentation(
                     apiVersion: "v1",       // CRITICAL: Must match service configuration!
                     enableOpenApi: true,    // ✅ Built-in .NET 10 OpenAPI
                     enableSwagger: true,    // ✅ Traditional Swagger UI
-                    enableScalar: false);   // ⏳ Pending proper integration
+                    enableScalar: true);    // ✅ Modern Scalar UI
             }
 
             // =================================================================
