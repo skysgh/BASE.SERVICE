@@ -52,10 +52,6 @@ namespace App.Host
             // Required for HttpContext (i.e., IContextService)
             builder.Services.AddHttpContextAccessor();
             
-            // TODO: Remove once auto-discovery is working for CacheObjectRegistryService
-            builder.Services.AddSingleton<App.Modules.Sys.Shared.Services.Caching.ICacheObjectRegistryService, 
-                                         App.Modules.Sys.Infrastructure.Caching.Implementations.CacheObjectRegistryService>();
-            
             builder.Services.AddWorkspaceRouting();     // Routing middleware
 
             // Add ASP.NET Core services
