@@ -1,6 +1,7 @@
-using System.Reflection;
+﻿using System.Reflection;
 using App.Modules.Sys.Shared.Models.Implementations;
-using App.Modules.Sys.Substrate.Contracts.Initialisation;
+using App.Modules.Sys.Shared.Models.Enums;
+using App.Modules.Sys.Initialisation.Implementation;
 
 namespace App.Host
 {
@@ -13,7 +14,7 @@ namespace App.Host
         /// Defines the entry point of the application.
         /// </summary>
         /// <param name="args">The arguments.</param>
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
             var log = StartupLog.Instance;
@@ -21,21 +22,41 @@ namespace App.Host
             // =================================================================
             // PHASE 1: MODULE DISCOVERY & SERVICE REGISTRATION
             // =================================================================
-            log.Log(Microsoft.Extensions.Logging.LogLevel.Information, 
+            log.Log(TraceLevel.Info, 
                 "=== INITIALIZING APPLICATION ===");
             
-            // ONE CALL - discovers all modules recursively
-            var initializer = new EntryPointModuleAssemblyInitialiser();
-            var configBag = initializer.Initialize(
+            // ONE CALL - discovers all modules recursively AND calls DoBeforeBuild
+            var configBag = 
+                EntryPointModuleAssemblyInitialiser
+                .Initialize(
                 Assembly.GetEntryAssembly()!,
                 builder.Configuration,
-                log);
+                log,
+                builder.Services);  // ← Pass services for DoBeforeBuild!
             
             // Register discovered services
             foreach (var service in configBag.LocalServices)
             {
                 builder.Services.Add(service);
             }
+
+            // Register discovered cache objects
+            foreach (var cacheObject in configBag.CacheObjects)
+            {
+                builder.Services.Add(cacheObject);
+            }
+
+            // =================================================================
+            // WORKSPACE ROUTING - Cache-backed, database-driven
+            // =================================================================
+            // Required for HttpContext (i.e., IContextService)
+            builder.Services.AddHttpContextAccessor();
+            
+            // TODO: Remove once auto-discovery is working for CacheObjectRegistryService
+            builder.Services.AddSingleton<App.Modules.Sys.Shared.Services.Caching.ICacheObjectRegistryService, 
+                                         App.Modules.Sys.Infrastructure.Caching.Implementations.CacheObjectRegistryService>();
+            
+            builder.Services.AddWorkspaceRouting();     // Routing middleware
 
             // Add ASP.NET Core services
             builder.Services.AddControllers();
@@ -45,11 +66,47 @@ namespace App.Host
             var app = builder.Build();
 
             // =================================================================
+            // PHASE 1.5: MODULE INITIALIZERS - DoAfterBuild
+            // =================================================================
+            log.Log(TraceLevel.Info, 
+                $"=== CALLING {configBag.ModuleInitializers.Count} INITIALIZERS (AfterBuild) ===");
+            
+            foreach (var initializer in configBag.ModuleInitializers)
+            {
+                try
+                {
+                    log.Log(TraceLevel.Debug, 
+                        $"Calling DoAfterBuild on {initializer.GetType().Name}");
+                    initializer.DoAfterBuild(app.Services);
+                }
+                catch (Exception ex)
+                {
+                    log.Log(TraceLevel.Error, 
+                        $"ERROR in {initializer.GetType().Name}.DoAfterBuild: {ex.Message}");
+                }
+            }
+
+            // =================================================================
+            // PRELOAD WORKSPACE CACHE
+            // =================================================================
+            await app.PreloadWorkspaceCacheAsync();
+
+            // =================================================================
             // PHASE 2: SERVICE CONFIGURERS (Credentials)
             // =================================================================
-            foreach (var configurer in configBag.ServiceConfigurers)
+            // Run configurers in order (DatabaseConfigurer runs first with Order=0)
+            var orderedConfigurers = configBag.ServiceConfigurers
+                .OrderBy(c => c.Order)
+                .ToList();
+            
+            log.Log(TraceLevel.Info, 
+                $"Running {orderedConfigurers.Count} service configurers in order...");
+            
+            foreach (var configurer in orderedConfigurers)
             {
-                configurer.ConfigureService(app.Services, builder.Configuration, log);
+                log.Log(TraceLevel.Debug, 
+                    $"Configuring: {configurer.ServiceName} (Order: {configurer.Order})");
+                configurer.Configure(app.Services);
             }
 
             // Configure pipeline
@@ -59,7 +116,13 @@ namespace App.Host
                 app.UseSwaggerUI();
             }
 
+            // =================================================================
+            // MIDDLEWARE PIPELINE
+            // =================================================================
+            app.UseWorkspaceRouting();  // ? BEFORE UseRouting!
+            
             app.UseHttpsRedirection();
+            app.UseRouting();
             app.UseStaticFiles();
             app.MapControllers();
 

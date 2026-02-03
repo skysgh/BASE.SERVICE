@@ -1,6 +1,91 @@
-@App.Host_HostAddress = http://localhost:5213
+@App.Host_HostAddress = https://localhost:4204
+@workspace = default
 
-GET {{App.Host_HostAddress}}/weatherforecast/
+###############################################################################
+# HEALTH & INFO
+###############################################################################
+
+### Health Check
+GET {{App.Host_HostAddress}}/health
 Accept: application/json
 
 ###
+
+###############################################################################
+# SYSTEM PERMISSIONS API (Read-Only Reference Data)
+###############################################################################
+
+### Get All System Permissions
+GET {{App.Host_HostAddress}}/api/v1/workspaces/{{workspace}}/systempermissions
+Accept: application/json
+
+### Get System Permissions by Category
+GET {{App.Host_HostAddress}}/api/v1/workspaces/{{workspace}}/systempermissions?category=System
+Accept: application/json
+
+### Get Specific Permission by Key
+GET {{App.Host_HostAddress}}/api/v1/workspaces/{{workspace}}/systempermissions/System.Admin
+Accept: application/json
+
+### Get Permission Categories
+GET {{App.Host_HostAddress}}/api/v1/workspaces/{{workspace}}/systempermissions/categories
+Accept: application/json
+
+###
+
+###############################################################################
+# SESSIONS API
+###############################################################################
+
+### Get All Sessions
+GET {{App.Host_HostAddress}}/api/v1/workspaces/{{workspace}}/sessions
+Accept: application/json
+
+### Get Active Sessions Only
+GET {{App.Host_HostAddress}}/api/v1/workspaces/{{workspace}}/sessions?activeOnly=true
+Accept: application/json
+
+### Get Sessions with Pagination
+GET {{App.Host_HostAddress}}/api/v1/workspaces/{{workspace}}/sessions?skip=0&take=10
+Accept: application/json
+
+### Get Specific Session by ID
+# Replace {sessionId} with actual GUID
+GET {{App.Host_HostAddress}}/api/v1/workspaces/{{workspace}}/sessions/00000000-0000-0000-0000-000000000000
+Accept: application/json
+
+### Get Session Operations
+# Replace {sessionId} with actual GUID
+GET {{App.Host_HostAddress}}/api/v1/workspaces/{{workspace}}/sessions/00000000-0000-0000-0000-000000000000/operations
+Accept: application/json
+
+###
+
+###############################################################################
+# WORKSPACE ROUTING TESTS (Path-Based)
+###############################################################################
+
+### Test IBM Workspace (Path-Based)
+GET {{App.Host_HostAddress}}/ibm/api/v1/workspaces/ibm/sessions
+Accept: application/json
+
+### Test ACME Workspace (Path-Based)
+GET {{App.Host_HostAddress}}/acme/api/v1/workspaces/acme/sessions
+Accept: application/json
+
+### Test Demo Workspace (Path-Based)
+GET {{App.Host_HostAddress}}/demo/api/v1/workspaces/demo/sessions
+Accept: application/json
+
+###
+
+###############################################################################
+# ADMIN API - WORKSPACE CACHE MANAGEMENT
+###############################################################################
+
+### Refresh Workspace Cache
+POST {{App.Host_HostAddress}}/api/admin/workspaces/refresh-cache
+Content-Type: application/json
+
+###
+
