@@ -180,6 +180,32 @@ csharp_preserve_single_line_statements = false
 
 #### Naming styles ####
 
+# CODING STANDARDS - Magic Strings/Numbers
+# NOTE: .editorconfig cannot enforce this automatically. 
+# Consider adding SonarAnalyzer.CSharp or Roslynator NuGet packages for automated detection.
+#
+# PRINCIPLE: Avoid "magic strings" - hardcoded string literals with semantic meaning
+# BAD:  if (assemblyName.Contains("Application")) 
+# GOOD: if (assemblyName.Contains(LayerNames.Application))
+#
+# WHEN TO EXTRACT TO CONSTANTS:
+# - Assembly/namespace names used for conventions ("Application", "Infrastructure.Data")
+# - File paths, URLs, connection string keys
+# - Configuration keys, setting names
+# - Status codes, error codes, enum-like strings
+# - Any string used in multiple places
+#
+# WHEN LITERALS ARE ACCEPTABLE:
+# - One-off log messages (unless repeated)
+# - Test data strings
+# - Display text (should eventually be in resources for i18n)
+# - Exception messages (debatable - consider resource files)
+#
+# RECOMMENDATION: 
+# 1. Create constants classes per domain/layer (e.g., LayerConventions.cs, ConfigurationKeys.cs)
+# 2. Add SonarAnalyzer.CSharp NuGet package for S1075 (hardcoded URIs), S1185, etc.
+# 3. Review code for repeated strings and extract to constants
+
 # Naming rules
 
 dotnet_naming_rule.interface_should_be_begins_with_i.severity = warning
