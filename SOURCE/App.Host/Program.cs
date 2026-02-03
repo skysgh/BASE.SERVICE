@@ -116,13 +116,14 @@ namespace App.Host
             // =================================================================
             if (app.Environment.IsDevelopment())
             {
+                // OpenAPI (native): /documentation/apis/v1/openapi.json
                 // Swagger UI: /documentation/apis/v1/swagger
-                // Swagger JSON: /documentation/apis/v1/swagger.json  
-                // Scalar: TODO - Scalar.AspNetCore 2.x API needs investigation
+                // Scalar: TODO - Integration pending
                 app.UseApiDocumentation(
                     apiVersion: "v1",       // CRITICAL: Must match service configuration!
-                    enableSwagger: true,
-                    enableScalar: false);   // Disabled until Scalar 2.x API is clarified
+                    enableOpenApi: true,    // ✅ Built-in .NET 10 OpenAPI
+                    enableSwagger: true,    // ✅ Traditional Swagger UI
+                    enableScalar: false);   // ⏳ Pending proper integration
             }
 
             // =================================================================
