@@ -1,4 +1,4 @@
-﻿using System.Reflection;
+using System.Reflection;
 using App.Modules.Sys.Shared.Models.Implementations;
 using App.Modules.Sys.Shared.Models.Enums;
 using App.Modules.Sys.Initialisation.Implementation;
@@ -51,6 +51,11 @@ namespace App.Host
             // =================================================================
             // Required for HttpContext (i.e., IContextService)
             builder.Services.AddHttpContextAccessor();
+            
+            // Bootstrap: Registry must be registered before cache objects are discovered
+            // Cannot rely on auto-discovery here due to chicken-and-egg problem
+            builder.Services.AddSingleton<App.Modules.Sys.Shared.Services.Caching.ICacheObjectRegistryService, 
+                                         App.Modules.Sys.Infrastructure.Caching.Implementations.CacheObjectRegistryService>();
             
             builder.Services.AddWorkspaceRouting();     // Routing middleware
 
