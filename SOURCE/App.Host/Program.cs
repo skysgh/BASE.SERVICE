@@ -2,7 +2,6 @@ using System.Reflection;
 using App.Modules.Sys.Shared.Models.Implementations;
 using App.Modules.Sys.Shared.Models.Enums;
 using App.Modules.Sys.Initialisation.Implementation;
-using App.Modules.Sys.Infrastructure.Web.OpenAPI.Extensions;
 
 namespace App.Host
 {
@@ -117,10 +116,7 @@ namespace App.Host
             // =================================================================
             if (app.Environment.IsDevelopment())
             {
-                app.UseApiDocumentation(
-                    enableOpenApi: true,   // /documentation/apis/openapi/v1.json
-                    enableSwagger: true,   // /documentation/apis/swagger
-                    enableScalar: true);   // /documentation/apis/scalar
+                app.UseApiDocumentation();  // Swagger at /documentation/apis/swagger
             }
 
             // =================================================================
