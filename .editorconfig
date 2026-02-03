@@ -3,6 +3,26 @@
 # top-most EditorConfig file
 root = true
 
+# ============================================================================
+# CRITICAL API DESIGN RULE: API VERSIONING IS MANDATORY
+# ============================================================================
+# ALL API routes MUST include explicit version information (e.g., /api/v1/, /v2/)
+# This prevents breaking changes and maintainability nightmares.
+#
+# ENFORCEMENT: 
+# - Use [Route("api/v{version:apiVersion}/[controller]")] on all API controllers
+# - Never use [Route("api/[controller]")] without version
+# - All documentation endpoints MUST include version: /documentation/apis/v1/swagger
+# - When releasing new major versions, increment: v1 -> v2 -> v3
+#
+# BAD:  [Route("api/sessions")]           // No version - will cause headaches!
+# GOOD: [Route("api/v1/sessions")]        // Explicit version
+# GOOD: [Route("api/v{version:apiVersion}/sessions")]  // Supports multiple versions
+#
+# NOTE: .editorconfig cannot automatically enforce this pattern.
+# TODO: Consider adding custom Roslyn analyzer or SonarQube rule to catch violations.
+# ============================================================================
+
 # All files
 [*]
 charset = utf-8

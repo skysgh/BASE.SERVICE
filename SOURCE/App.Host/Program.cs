@@ -60,10 +60,10 @@ namespace App.Host
             builder.Services.AddWorkspaceRouting();     // Routing middleware
 
             // =================================================================
-            // API DOCUMENTATION - OpenAPI, Swagger, Scalar
+            // API DOCUMENTATION - Swagger + Scalar (VERSIONED)
             // =================================================================
             builder.Services.AddControllers();
-            builder.Services.AddApiDocumentation();  // All three: OpenAPI + Swagger + Scalar
+            builder.Services.AddApiDocumentation(apiVersion: "v1");  // CRITICAL: Version must be explicit!
 
             var app = builder.Build();
 
@@ -112,11 +112,17 @@ namespace App.Host
             }
 
             // =================================================================
-            // API DOCUMENTATION MIDDLEWARE
+            // API DOCUMENTATION MIDDLEWARE (VERSIONED)
             // =================================================================
             if (app.Environment.IsDevelopment())
             {
-                app.UseApiDocumentation();  // Swagger at /documentation/apis/swagger
+                // Swagger UI: /documentation/apis/v1/swagger
+                // Swagger JSON: /documentation/apis/v1/swagger.json  
+                // Scalar: TODO - Scalar.AspNetCore 2.x API needs investigation
+                app.UseApiDocumentation(
+                    apiVersion: "v1",       // CRITICAL: Must match service configuration!
+                    enableSwagger: true,
+                    enableScalar: false);   // Disabled until Scalar 2.x API is clarified
             }
 
             // =================================================================
