@@ -63,10 +63,14 @@ namespace App.Host
             builder.Services.AddWorkspaceRouting();     // Routing middleware
 
             // =================================================================
-            // API DOCUMENTATION - Swagger + Scalar (VERSIONED)
+            // API DOCUMENTATION - MODULE-BASED (VERSIONED)
             // =================================================================
             builder.Services.AddControllers();
-            builder.Services.AddApiDocumentation(apiVersion: "v1");  // CRITICAL: Version must be explicit!
+            // Each logical module registers its own documentation
+            builder.Services.AddApiDocumentation(moduleName: "sys", apiVersion: "v1");
+            // Future modules:
+            // builder.Services.AddApiDocumentation(moduleName: "social", apiVersion: "v1");
+            // builder.Services.AddApiDocumentation(moduleName: "work", apiVersion: "v1");
 
             var app = builder.Build();
 
@@ -115,21 +119,27 @@ namespace App.Host
             }
 
             // =================================================================
-            // API DOCUMENTATION MIDDLEWARE
+            // API DOCUMENTATION MIDDLEWARE - MODULE-BASED
             // =================================================================
             if (app.Environment.IsDevelopment())
             {
-                // STANDARD machine-readable paths (tools/libraries depend on these):
-                //   OpenAPI JSON: /openapi/v1.json (native .NET 10)
-                //   Swagger JSON: /swagger/v1/swagger.json (Swashbuckle - legacy tools)
-                // CUSTOM human-readable UIs (unified documentation location):
-                //   Swagger UI: /documentation/apis/v1/swagger
-                //   Scalar UI: /documentation/apis/v1/scalar
+                // Module: System (Sys)
+                // STANDARD machine-readable (tools):
+                //   OpenAPI JSON: /openapi/sys-v1.json
+                //   Swagger JSON: /swagger/sys-v1/swagger.json
+                // CUSTOM human-readable (module-organized):
+                //   Swagger UI: /documentation/apis/sys/v1/swagger
+                //   Scalar UI: /documentation/apis/sys/v1/scalar
                 app.UseApiDocumentation(
+                    moduleName: "sys",
                     apiVersion: "v1",
                     enableOpenApi: true,
                     enableSwagger: true,
                     enableScalar: true);
+                
+                // Future modules:
+                // app.UseApiDocumentation(moduleName: "social", apiVersion: "v1");
+                // app.UseApiDocumentation(moduleName: "work", apiVersion: "v1");
             }
 
             // =================================================================
