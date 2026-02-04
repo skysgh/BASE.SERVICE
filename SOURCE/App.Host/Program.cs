@@ -119,17 +119,17 @@ namespace App.Host
             // =================================================================
             if (app.Environment.IsDevelopment())
             {
-                // Machine-readable (standard paths for tools):
+                // STANDARD paths (tools/libraries depend on these):
                 //   OpenAPI JSON: /openapi/v1.json
                 //   Swagger JSON: /swagger/v1/swagger.json
-                // Human-readable UIs (custom versioned paths):
-                //   Swagger UI: /documentation/apis/v1/swagger
-                //   Scalar UI: /scalar/v1
+                //   Swagger UI: /swagger (industry standard)
+                // CUSTOM path (your unified documentation):
+                //   Scalar UI: /documentation/apis/v1/scalar
                 app.UseApiDocumentation(
-                    apiVersion: "v1",       // CRITICAL: Must match service configuration!
-                    enableOpenApi: true,    // ✅ Built-in .NET 10 OpenAPI
-                    enableSwagger: true,    // ✅ Traditional Swagger UI
-                    enableScalar: true);    // ✅ Modern Scalar UI
+                    apiVersion: "v1",
+                    enableOpenApi: true,
+                    enableSwagger: true,
+                    enableScalar: true);
             }
 
             // =================================================================
