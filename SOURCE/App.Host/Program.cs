@@ -115,13 +115,16 @@ namespace App.Host
             }
 
             // =================================================================
-            // API DOCUMENTATION MIDDLEWARE (ALL THREE!)
+            // API DOCUMENTATION MIDDLEWARE
             // =================================================================
             if (app.Environment.IsDevelopment())
             {
-                // OpenAPI (native): /documentation/apis/v1/openapi.json
-                // Swagger UI: /documentation/apis/v1/swagger
-                // Scalar UI: /scalar/v1 (DeepSpace theme)
+                // Machine-readable (standard paths for tools):
+                //   OpenAPI JSON: /openapi/v1.json
+                //   Swagger JSON: /swagger/v1/swagger.json
+                // Human-readable UIs (custom versioned paths):
+                //   Swagger UI: /documentation/apis/v1/swagger
+                //   Scalar UI: /scalar/v1
                 app.UseApiDocumentation(
                     apiVersion: "v1",       // CRITICAL: Must match service configuration!
                     enableOpenApi: true,    // ✅ Built-in .NET 10 OpenAPI
