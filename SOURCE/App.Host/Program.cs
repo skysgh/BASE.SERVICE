@@ -123,21 +123,22 @@ namespace App.Host
             // =================================================================
             if (app.Environment.IsDevelopment())
             {
-                // Configure per-module Swagger UIs
+                // STANDARD machine-readable (tools):
+                //   OpenAPI JSON: /openapi/sys-v1.json
+                //   Swagger JSON: /swagger/sys-v1/swagger.json
+                // CUSTOM human-readable (consistent pattern):
+                //   Swagger UI: /documentation/apis/swagger/sys/v1/
+                //   Scalar UI: /documentation/apis/scalar/sys/v1/
                 app.UseApiDocumentation(
                     moduleName: "sys",
                     apiVersion: "v1",
                     enableOpenApi: true,
                     enableSwagger: true,
-                    enableScalar: false);  // Scalar configured once below
+                    enableScalar: true);
                 
                 // Future modules:
-                // app.UseApiDocumentation(moduleName: "social", apiVersion: "v1", enableScalar: false);
-                // app.UseApiDocumentation(moduleName: "work", apiVersion: "v1", enableScalar: false);
-                
-                // Scalar UI (ONCE for all modules) at /scalar
-                // Auto-discovers all /openapi/*.json endpoints
-                app.UseScalarForAllModules();
+                // app.UseApiDocumentation(moduleName: "social", apiVersion: "v1");
+                // app.UseApiDocumentation(moduleName: "work", apiVersion: "v1");
             }
 
             // =================================================================
