@@ -119,11 +119,11 @@ namespace App.Host
             // =================================================================
             if (app.Environment.IsDevelopment())
             {
-                // STANDARD paths (tools/libraries depend on these):
-                //   OpenAPI JSON: /openapi/v1.json
-                //   Swagger JSON: /swagger/v1/swagger.json
-                //   Swagger UI: /swagger (industry standard)
-                // CUSTOM path (your unified documentation):
+                // STANDARD machine-readable paths (tools/libraries depend on these):
+                //   OpenAPI JSON: /openapi/v1.json (native .NET 10)
+                //   Swagger JSON: /swagger/v1/swagger.json (Swashbuckle - legacy tools)
+                // CUSTOM human-readable UIs (unified documentation location):
+                //   Swagger UI: /documentation/apis/v1/swagger
                 //   Scalar UI: /documentation/apis/v1/scalar
                 app.UseApiDocumentation(
                     apiVersion: "v1",
