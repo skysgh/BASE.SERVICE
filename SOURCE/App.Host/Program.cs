@@ -123,6 +123,14 @@ namespace App.Host
             // =================================================================
             if (app.Environment.IsDevelopment())
             {
+                // STANDARD machine-readable (tools):
+                //   OpenAPI JSON: /openapi/sys-v1.json
+                //   Swagger JSON: /swagger/sys-v1/swagger.json
+                // CUSTOM human-readable (consistent /documentation/apis/ pattern):
+                //   Swagger UI: /documentation/apis/swagger/sys/v1/
+                //   Scalar UI: /documentation/apis/scalar/ (all modules)
+                //   Scalar redirect: /documentation/apis/scalar/sys/v1/ → /documentation/apis/scalar/
+                
                 // Per-module documentation
                 app.UseApiDocumentation(
                     moduleName: "sys",
@@ -135,7 +143,7 @@ namespace App.Host
                 // app.UseApiDocumentation(moduleName: "social", apiVersion: "v1");
                 
                 // Single Scalar UI for ALL modules (must be called AFTER all UseApiDocumentation)
-                app.UseScalarForAllModules();  // At /scalar with dropdown
+                app.UseScalarForAllModules();  // At /documentation/apis/scalar/ with dropdown
             }
 
             // =================================================================
