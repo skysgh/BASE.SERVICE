@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -36,6 +36,8 @@
     <ProjectReference Include="..\..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Sys.Interfaces.UI.Web\App.Modules.Sys.Interfaces.UI.Web.csproj" />
     <ProjectReference Include="..\..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Sys.Infrastructure.Web\App.Modules.Sys.Infrastructure.Web.csproj" />
     <ProjectReference Include="..\..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Sys.Infrastructure.Web.OpenAPI\App.Modules.Sys.Infrastructure.Web.OpenAPI.csproj" />
+    <!-- Needed for EF Core migrations -->
+    <ProjectReference Include="..\..\SUBMODULES\BASE.Modules.Sys\SOURCE\App.Modules.Sys.Infrastructure.Data.EF\App.Modules.Sys.Infrastructure.Data.EF.csproj" />
   </ItemGroup>
 	
 	

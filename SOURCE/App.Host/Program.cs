@@ -2,6 +2,7 @@ using System.Reflection;
 using App.Modules.Sys.Shared.Models.Implementations;
 using App.Modules.Sys.Shared.Models.Enums;
 using App.Modules.Sys.Initialisation.Implementation;
+using App.Modules.Sys.Infrastructure.Domains.Caching.Implementations;
 
 namespace App.Host
 {
@@ -55,7 +56,7 @@ namespace App.Host
             // Bootstrap: Registry must be registered before cache objects are discovered
             // Cannot rely on auto-discovery here due to chicken-and-egg problem
             builder.Services.AddSingleton<App.Modules.Sys.Shared.Services.Caching.ICacheObjectRegistryService, 
-                                         App.Modules.Sys.Infrastructure.Caching.Implementations.CacheObjectRegistryService>();
+                                         CacheObjectRegistryService>();
             
             // Workspace validation service (cache-backed)
             builder.Services.AddWorkspaceValidation();  // CRITICAL: Must be before AddWorkspaceRouting!
