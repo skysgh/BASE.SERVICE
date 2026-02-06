@@ -1,4 +1,5 @@
-using App.Modules.Sys.Application.Domains.Diagnotics.SmokeTesting.Services;
+using App.Modules.Sys.Application.Domains.Diagnostics.Services;
+using App.Modules.Sys.Application.Domains.Diagnostics.SmokeTesting.Models;
 using App.Modules.Sys.Shared.Constants;
 using App.Modules.Sys.Shared.Models.Enums;
 using App.Modules.Sys.Shared.Models.Implementations;
@@ -90,10 +91,12 @@ internal static class StartupDiagnosticsHelper
 
         public StartupScope(
             StartupLog log,
+#pragma warning disable IDE0060 // Remove unused parameter
             IStartupDiagnosticsApplicationService? diagnosticsService,
             string title,
             string? description,
             string[] tags)
+#pragma warning restore IDE0060
         {
             _log = log;
             _title = title;

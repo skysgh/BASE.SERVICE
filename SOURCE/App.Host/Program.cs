@@ -3,6 +3,7 @@ using App.Modules.Sys.Shared.Models.Implementations;
 using App.Modules.Sys.Shared.Models.Enums;
 using App.Modules.Sys.Initialisation.Implementation;
 using App.Modules.Sys.Infrastructure.Domains.Caching.Implementations;
+using App.Modules.Sys.Shared.Services.Caching;
 
 namespace App.Host
 {
@@ -27,25 +28,48 @@ namespace App.Host
                 "=== INITIALIZING APPLICATION ===");
             
             // ONE CALL - discovers all modules recursively AND calls DoBeforeBuild
-            var configBag = 
+            var moduleBags = 
                 EntryPointModuleAssemblyInitialiser
                 .Initialize(
                 Assembly.GetEntryAssembly()!,
                 builder.Configuration,
                 log,
                 builder.Services);  // ← Pass services for DoBeforeBuild!
-            
+
+            //foreach (var service in configBag.Assemblies)
+            //{
+            //    builder.Services.Add(service);
+            //    log.Log(TraceLevel.Info, $"Registered service: {service.ServiceType}=>{service.ImplementationType}");
+            //}
+
             // Register discovered services
-            foreach (var service in configBag.LocalServices)
+            foreach (var bag in moduleBags.Values)
             {
-                builder.Services.Add(service);
+                foreach (var service in bag.LocalServices)
+                {
+                    builder.Services.Add(service);
+                    log.Log(TraceLevel.Info, $"Registered service: {service.ServiceType}=>{service.ImplementationType}");
+                }
+
+                // Register discovered cache objects
+
+
+
+                foreach (var cacheObject in bag.CacheObjects)
+                {
+                    {
+                        builder.Services.Add(cacheObject);
+                        log.Log(TraceLevel.Info, $"Registered service: {cacheObject.ServiceType}=>{cacheObject.ImplementationType}");
+                    }
+                }
             }
 
-            // Register discovered cache objects
-            foreach (var cacheObject in configBag.CacheObjects)
-            {
-                builder.Services.Add(cacheObject);
-            }
+            // Bootstrap: Registry must be registered before cache objects are discovered
+            // Cannot rely on auto-discovery here due to chicken-and-egg problem
+            builder.Services
+                .AddSingleton<
+                    ICacheObjectRegistryService,
+                    CacheObjectRegistryService>();
 
             // =================================================================
             // WORKSPACE ROUTING - Cache-backed, database-driven
@@ -53,10 +77,6 @@ namespace App.Host
             // Required for HttpContext (i.e., IContextService)
             builder.Services.AddHttpContextAccessor();
             
-            // Bootstrap: Registry must be registered before cache objects are discovered
-            // Cannot rely on auto-discovery here due to chicken-and-egg problem
-            builder.Services.AddSingleton<App.Modules.Sys.Shared.Services.Caching.ICacheObjectRegistryService, 
-                                         CacheObjectRegistryService>();
             
             // Workspace validation service (cache-backed)
             builder.Services.AddWorkspaceValidation();  // CRITICAL: Must be before AddWorkspaceRouting!
@@ -79,22 +99,26 @@ namespace App.Host
             // PHASE 1.5: MODULE INITIALIZERS - DoAfterBuild
             // =================================================================
             log.Log(TraceLevel.Info, 
-                $"=== CALLING {configBag.ModuleInitializers.Count} INITIALIZERS (AfterBuild) ===");
-            
-            foreach (var initializer in configBag.ModuleInitializers)
-            {
-                try
+                $"=== CALLING {moduleBags.Values.Sum(b => b.ModuleInitializers.Count)} INITIALIZERS (AfterBuild) ===");
+
+                foreach (var bag in moduleBags.Values)
                 {
-                    log.Log(TraceLevel.Debug, 
-                        $"Calling DoAfterBuild on {initializer.GetType().Name}");
-                    initializer.DoAfterBuild(app.Services);
+                    foreach (var initializer in bag.ModuleInitializers)
+                    {
+
+                        try
+                        {
+                            log.Log(TraceLevel.Debug,
+                                $"Calling DoAfterBuild on {initializer.GetType().Name}");
+                            initializer.DoAfterBuild(app.Services);
+                        }
+                        catch (Exception ex)
+                        {
+                            log.Log(TraceLevel.Error,
+                                $"ERROR in {initializer.GetType().Name}.DoAfterBuild: {ex.Message}");
+                        }
+                    }
                 }
-                catch (Exception ex)
-                {
-                    log.Log(TraceLevel.Error, 
-                        $"ERROR in {initializer.GetType().Name}.DoAfterBuild: {ex.Message}");
-                }
-            }
 
             // =================================================================
             // PRELOAD WORKSPACE CACHE
@@ -105,7 +129,7 @@ namespace App.Host
             // PHASE 2: SERVICE CONFIGURERS (Credentials)
             // =================================================================
             // Run configurers in order (DatabaseConfigurer runs first with Order=0)
-            var orderedConfigurers = configBag.ServiceConfigurers
+            var orderedConfigurers = moduleBags.Values.SelectMany(b => b.ServiceConfigurers)
                 .OrderBy(c => c.Order)
                 .ToList();
             
